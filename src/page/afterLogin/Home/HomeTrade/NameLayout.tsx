@@ -17,7 +17,7 @@ const NameLayout: FC<Props> = ({Card}) => {
     const subscribe = firestore()
       .collection('UsersVisibility')
       .onSnapshot(querydocument => {
-        querydocument.forEach(doc => {
+        querydocument?.forEach(doc => {
           if (Card?.id == doc?.id) {
             setActive(doc?.data().status);
           }

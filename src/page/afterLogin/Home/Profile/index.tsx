@@ -77,14 +77,16 @@ const Profile: FC = () => {
         .collection('Users')
         .doc(id)
         .onSnapshot((documentSnapshot: FirebaseFirestoreTypes.DocumentData) => {
-          let {NAME, PROFILE_PIC} = documentSnapshot.data();
-          setUserData(prevData => ({
-            ...prevData,
-            name: NAME,
-            userId: id,
-            pic: PROFILE_PIC?.length > 0 ? PROFILE_PIC[0] : '',
-          }));
-          Storage.storeData('NAME', NAME);
+          if (documentSnapshot?.data()) {
+            let {NAME, PROFILE_PIC} = documentSnapshot.data();
+            setUserData(prevData => ({
+              ...prevData,
+              name: NAME,
+              userId: id,
+              pic: PROFILE_PIC?.length > 0 ? PROFILE_PIC[0] : '',
+            }));
+            Storage.storeData('NAME', NAME);
+          }
         });
     });
     return () => subscriber;

@@ -65,7 +65,7 @@ const ChatScreen: FC = () => {
     const subscribe = firestore()
       .collection('UsersVisibility')
       .onSnapshot(querydocument => {
-        querydocument.forEach(doc => {
+        querydocument?.forEach(doc => {
           if (mRoute?.params?.INFO?.USER_ID == doc.id) {
             setActive(doc?.data().status);
             setTimeAgo(
@@ -159,12 +159,15 @@ const ChatScreen: FC = () => {
         .collection('Users')
         .doc(id)
         .onSnapshot((documentSnapshot: FirebaseFirestoreTypes.DocumentData) => {
-          let {NAME, PROFILE_PIC} = documentSnapshot.data();
-          setUserData(preData => ({
-            ...preData,
-            name: NAME,
-            profilePic: PROFILE_PIC[0],
-          }));
+          if(documentSnapshot?.data() >0)
+          {
+            let {NAME, PROFILE_PIC} = documentSnapshot.data();
+            setUserData(preData => ({
+              ...preData,
+              name: NAME,
+              profilePic: PROFILE_PIC[0],
+            }));
+          }
         });
     });
     return () => subscriber;

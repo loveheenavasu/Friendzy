@@ -10,7 +10,7 @@ const onlineOfflineHooks = () => {
       .collection('UsersVisibility')
       .onSnapshot(querydocument => {
         const userData: any = [];
-        querydocument.forEach(doc => {
+        querydocument?.forEach(doc => {
           let actor = {userId: doc.id, status: doc?.data().status};
           userData.push(actor);
         });

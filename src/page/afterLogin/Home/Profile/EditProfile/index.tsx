@@ -14,7 +14,14 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import {Strings, Icon, isEmailValid, CommonStyles, Loader, Color} from '@src/util';
+import {
+  Strings,
+  Icon,
+  isEmailValid,
+  CommonStyles,
+  Loader,
+  Color,
+} from '@src/util';
 import {
   EditText,
   Label,
@@ -109,19 +116,21 @@ const EditProfile = () => {
       .collection('Users')
       .doc(USER_ID)
       .onSnapshot((documentSnapshot: FirebaseFirestoreTypes.DocumentData) => {
-        const {EMAIL, NAME, PHONE, BIO, LOCATION, DOB, SEX} =
-          documentSnapshot.data();
-        setUserData(prevData => ({
-          ...prevData,
-          gender: SEX,
-          email: EMAIL,
-          name: NAME,
-          phone: PHONE,
-          dob: new Date(DOB.seconds * 1000 + DOB.nanoseconds / 1000000),
-          loc: LOCATION,
-          bio: BIO,
-          showLoader: false,
-        }));
+        if (documentSnapshot?.data()) {
+          const {EMAIL, NAME, PHONE, BIO, LOCATION, DOB, SEX} =
+            documentSnapshot.data();
+          setUserData(prevData => ({
+            ...prevData,
+            gender: SEX,
+            email: EMAIL,
+            name: NAME,
+            phone: PHONE,
+            dob: new Date(DOB.seconds * 1000 + DOB.nanoseconds / 1000000),
+            loc: LOCATION,
+            bio: BIO,
+            showLoader: false,
+          }));
+        }
         setShowDate(true);
       });
     return () => subscriber;
