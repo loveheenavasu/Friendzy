@@ -6,7 +6,7 @@ import {Strings, Color} from '@src/util';
 import {scale} from 'react-native-size-matters';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from '@src/store';
-import {checkPerfectMatch, sendNotification} from '@src/redux/LoginAction';
+import {checkPerfectMatch, likeCount, sendNotification} from '@src/redux/LoginAction';
 import NameLayout from './NameLayout';
 import CustomImage from '@src/commonComponent/CustomImage/Image';
 interface Props {
@@ -16,6 +16,7 @@ interface Props {
   Cards: any;
   UserName: string | undefined;
   Active: boolean;
+  // AddHeartArr?:(item:object)=>void | undefined;
 }
 
 const SwiperLayout: FC<Props> = ({
@@ -25,6 +26,7 @@ const SwiperLayout: FC<Props> = ({
   Cards,
   UserName,
   Active,
+  // AddHeartArr
 }) => {
   const dispatch = useDispatch<any>();
   const {} = useSelector((state: RootState) => state.login_Reducer);
@@ -40,6 +42,7 @@ const SwiperLayout: FC<Props> = ({
     dispatch(
       checkPerfectMatch({loginUserId: ITEM?.loginUserId, userId: ITEM?.id}),
     );
+    // dispatch(likeCount())
   };
 
   const renderCard = (
@@ -89,7 +92,8 @@ const SwiperLayout: FC<Props> = ({
         }}
         animateOverlayLabelsOpacity
         animateCardOpacity
-        swipeBackCard></Swiper>
+        swipeBackCard
+       ></Swiper>
     </View>
   );
 };
