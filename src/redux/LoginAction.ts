@@ -1,12 +1,14 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import auth, {firebase} from '@react-native-firebase/auth';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import auth, { firebase } from '@react-native-firebase/auth';
 import Toast from 'react-native-toast-message';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import * as Storage from '@src/service';
 
-import {postMethod} from '@src/util/ApiConfig';
-import {myAge} from '@src/util/Validator';
+import { postMethod } from '@src/util/ApiConfig';
+import { myAge } from '@src/util/Validator';
+import { useDispatch } from 'react-redux';
+import { Dispatch } from 'react';
 
 export interface CounterState {
   value: number;
@@ -21,6 +23,9 @@ export interface CounterState {
   gender?: string;
   age?: Object;
   location?: string;
+  likedCount?: number;
+  likedIDS?: string[];
+  likedProfileArr: Object[];
 }
 
 const initialState: CounterState = {
@@ -36,6 +41,9 @@ const initialState: CounterState = {
   gender: '',
   age: '',
   location: '',
+  likedCount: undefined,
+  likedIDS: [],
+  likedProfileArr: []
 };
 
 interface updateProfile {
@@ -47,6 +55,7 @@ interface updateProfile {
   PHONE: string;
   SEX: string;
   USER_ID: string;
+
 }
 
 interface updateProfilePicType {
@@ -57,7 +66,7 @@ interface updateProfilePicType {
 
 export const hitLoginApi = createAsyncThunk(
   'HIT_LOGIN_API',
-  async (pars: {email: string; password: string | number; token: string}) => {
+  async (pars: { email: string; password: string | number; token: string }) => {
     try {
       await auth().signInWithEmailAndPassword(
         pars.email,
@@ -91,7 +100,7 @@ export const hitLoginApi = createAsyncThunk(
 
 export const hitLogoutApi = createAsyncThunk(
   'HIT_LOGOUT_API',
-  async (pars: {email: string | undefined}) => {
+  async (pars: { email: string | undefined }) => {
     return await auth().signOut();
   },
 );
@@ -108,7 +117,7 @@ export const updateProfile = createAsyncThunk(
           text1: 'Profile update successfully',
         });
       })
-      .catch(error => {});
+      .catch(error => { });
     firestore()
       .collection('LastMessage')
       .where('sendTo', '==', pars.USER_ID)
@@ -119,7 +128,7 @@ export const updateProfile = createAsyncThunk(
           firestore()
             .collection('LastMessage')
             .doc(snapshot.id)
-            .update({receiverName: pars.NAME});
+            .update({ receiverName: pars.NAME });
         });
       })
       .catch(error => {
@@ -136,7 +145,7 @@ export const updateProfile = createAsyncThunk(
           firestore()
             .collection('LastMessage')
             .doc(snapshot.id)
-            .update({senderName: pars.NAME});
+            .update({ senderName: pars.NAME });
         });
       })
       .catch(error => {
@@ -154,7 +163,7 @@ interface newPassObj {
 export const updatePassword = createAsyncThunk(
   'UPDATE_PASSWORD',
   async (pars: newPassObj) => {
-    const {USER_ID, newPassword} = pars;
+    const { USER_ID, newPassword } = pars;
     // changing password in auth Table
     const currentUser = firebase.auth().currentUser;
     if (currentUser?.email) {
@@ -172,14 +181,14 @@ export const updatePassword = createAsyncThunk(
     return await firestore()
       .collection('Users')
       .doc(USER_ID)
-      .update({PASS: newPassword})
+      .update({ PASS: newPassword })
       .then(() => {
         Toast.show({
           type: 'success',
           text1: 'Password change successfully',
         });
       })
-      .catch(error => {});
+      .catch(error => { });
   },
 );
 
@@ -210,7 +219,7 @@ export const updateProfilePic = createAsyncThunk(
 
 export const deleteProfilePic = createAsyncThunk(
   'DELETE_PROFILE_PIC',
-  async (pars: {UserId: string; pic: string}) => {
+  async (pars: { UserId: string; pic: string }) => {
     try {
       await storage().refFromURL(pars?.pic).delete();
       await firestore()
@@ -240,7 +249,7 @@ export const getAllUser = createAsyncThunk('GET_ALL_USER', async pars => {
     );
     if (ageFilter && genderFilter) {
       let ageFilterList = [];
-      const {minAge, maxAge} = JSON.parse(ageFilter);
+      const { minAge, maxAge } = JSON.parse(ageFilter);
       for (let index = 0; index < mTemp.length; index++) {
         let dateOfBirth = myAge(mTemp[index].DOB);
         if (dateOfBirth >= minAge && dateOfBirth <= maxAge) {
@@ -253,7 +262,7 @@ export const getAllUser = createAsyncThunk('GET_ALL_USER', async pars => {
       return JSON.parse(JSON.stringify(filterList));
     } else if (ageFilter) {
       let ageFilterList = [];
-      const {minAge, maxAge} = JSON.parse(ageFilter);
+      const { minAge, maxAge } = JSON.parse(ageFilter);
       for (let index = 0; index < mTemp.length; index++) {
         let dateOfBirth = myAge(mTemp[index].DOB);
         if (dateOfBirth >= minAge && dateOfBirth <= maxAge) {
@@ -274,14 +283,14 @@ export const getAllUser = createAsyncThunk('GET_ALL_USER', async pars => {
 
 export const setUserSearchCriteria = createAsyncThunk(
   'SET_USER_SEARCH_CRITERIA',
-  async (pars: {gender: string; age: Object; location: string}) => {
+  async (pars: { gender: string; age: Object; location: string }) => {
     return pars;
   },
 );
 
 export const checkPerfectMatch = createAsyncThunk(
   'CHECK_MATCH',
-  async (pars: {loginUserId: string; userId: string}) => {
+  async (pars: { loginUserId: string; userId: string }) => {
     const likeData = await firestore()
       .collection('Users')
       .doc(pars?.loginUserId)
@@ -299,7 +308,7 @@ export const checkPerfectMatch = createAsyncThunk(
       return false;
     }
     if (mTemp.includes(pars?.userId)) {
-      let actor = {match: true, matchuserId: pars?.userId};
+      let actor = { match: true, matchuserId: pars?.userId };
       return actor;
     }
   },
@@ -311,7 +320,7 @@ export const unMatchSkip = createAsyncThunk('UNMATCH', async pars => {
 
 export const sendNotification = createAsyncThunk(
   'SEND_NOTIFICATION',
-  async (pars: any) => {
+  async (pars: any, { dispatch }: { dispatch: Dispatch }) => {
     try {
       const res = await postMethod(pars);
       await firestore()
@@ -329,19 +338,20 @@ export const sendNotification = createAsyncThunk(
         },
       ];
 
-      firestore()
+      await firestore()
         .collection('Likes')
         .doc(pars?.userId)
         .set(
           {
             LIKE_DATA: firestore.FieldValue.arrayUnion(...mCheck),
           },
-          {merge: true},
+          { merge: true },
         )
         .then(res => {
+          dispatch(likeCount())
           console.log('---inside-like-->', 1);
         })
-        .catch(error => {});
+        .catch(error => { });
     } catch (error) {
       console.log('----error--->', error);
     }
@@ -357,7 +367,7 @@ export const updateCount = createAsyncThunk(
 
 export const getAllLike = createAsyncThunk(
   'GET_ALL_LIKE',
-  async (pars: {userId: string | undefined}) => {
+  async (pars: { userId: string | undefined }) => {
     try {
       const querySnapshot = await firestore()
         .collection('Likes')
@@ -382,7 +392,7 @@ export const getAllLike = createAsyncThunk(
       } else {
         console.log('LIKE_DATA is empty or not available');
       }
-    } catch (error) {}
+    } catch (error) { }
   },
 );
 
@@ -438,78 +448,183 @@ export const getAllChatList = createAsyncThunk(
   },
 );
 
+
+
+export const likeCount = createAsyncThunk(
+  'LIKE_COUNT', async () => {
+
+    try {
+      const loggedInUserId = await Storage.retrieveData('USER_ID');
+      console.log('user ID is-->>', loggedInUserId);
+      // Delay for 2 seconds
+      // await new Promise(resolve => setTimeout(resolve, 2000));
+      const querySnapshot = await firestore().collection('Likes').get()
+      console.log('querySnapshot-->', querySnapshot);
+      let count = 0;
+      querySnapshot.docs.map((doc) => {
+        if (doc.exists) {
+          // Access the data of the document
+          const data = doc.data();
+          console.log('Document Data:', data);
+          const likeDataArray = data?.LIKE_DATA;
+          // Use map to iterate over each like object in the LIKE_DATA array
+          likeDataArray.map((likeData: any) => {
+            const { userId } = likeData;
+            console.log('USER ID -->>>', userId);
+            console.log('loggedInUserId->>', loggedInUserId);
+            if (userId === loggedInUserId) {
+              count++;
+            }
+          });
+        } else {
+          console.log('Document does not exist');
+        }
+      });
+      console.log('COUNT VALUE-->>>>', count);
+
+      return count;
+    }
+
+    catch (error) {
+      console.log('Errors-->>>', error);
+      throw error; // Rethrow the error to indicate failure
+    }
+  }
+)
+
+
+export const getLikedProfile = createAsyncThunk(
+  'GET_LIKE_PROFILE', async () => {
+    try {
+      const loggedInUserId = await Storage.retrieveData('USER_ID');
+      let likedProfiles: any[] = [];
+      
+      const likesSnapshot = await firestore().collection('Likes').get();
+
+      for (const doc of likesSnapshot.docs) {
+        const docID = doc.id;
+        const { LIKE_DATA } = doc.data();
+        
+        for (const item of LIKE_DATA) {
+          if (item?.userId === loggedInUserId) {
+            console.log('YES We found it');
+            const userDoc = await firestore().collection('Users').doc(docID).get();
+            if (userDoc.exists) {
+              let userData = userDoc.data();
+              // Convert non-serializable fields to serializable format
+              if (userData?.DOB instanceof Date) {
+                userData.DOB = userData.DOB.toString();
+              }
+              // console.log('USERDATA-->>', userData);
+              likedProfiles.push(userData);
+            }
+          }
+        }
+      }
+
+      // console.log('LIKEDPROFILES ARRAY-->>', likedProfiles);
+      return likedProfiles;
+    }
+    catch (error) {
+      console.log('Errors-->', error);
+      throw error; // Ensure to throw the error for proper error handling
+    }
+  }
+);
+
+
+
 export const counterSlice = createSlice({
   name: 'counter',
   initialState,
   reducers: {},
   extraReducers(builder) {
+    builder.addCase(likeCount.pending, (state, action) => {
+      return { ...state, hideProgressBar: true };
+    });
+    builder.addCase(likeCount.fulfilled, (state, action) => {
+     return { ...state, hideProgressBar: false, likedCount: action.payload };
+    });
+    builder.addCase(likeCount.rejected, (state, action) => {
+      return { ...state, hideProgressBar: false };
+    });
+    builder.addCase(getLikedProfile.pending, (state, action) => {
+      return { ...state, hideProgressBar: true };
+    });
+    builder.addCase(getLikedProfile.fulfilled, (state, action) => {
+      console.log('ARRAY -->',action?.payload);
+      return { ...state, hideProgressBar: false, likedProfileArr: action?.payload };
+    });
+    builder.addCase(getLikedProfile.rejected, (state, action) => {
+      return { ...state, hideProgressBar: false };
+    });
     builder.addCase(hitLoginApi.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(hitLoginApi.fulfilled, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(hitLoginApi.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(hitLogoutApi.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(hitLogoutApi.fulfilled, state => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(hitLogoutApi.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
 
     builder.addCase(updateProfile.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(updateProfile.fulfilled, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(updateProfile.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(updatePassword.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(updatePassword.fulfilled, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(updatePassword.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(updateProfilePic.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(updateProfilePic.fulfilled, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(updateProfilePic.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(getAllUser.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(getAllUser.fulfilled, (state, action) => {
       // console.log("-getAllUser.fulfilled-----action?.payload---->", action?.payload);
-      return {...state, hideProgressBar: false, tradeList: action?.payload};
+      return { ...state, hideProgressBar: false, tradeList: action?.payload };
     });
     builder.addCase(getAllUser.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(deleteProfilePic.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(deleteProfilePic.fulfilled, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(deleteProfilePic.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(updateCount.pending, (state, action) => {
-      return {...state};
+      return { ...state };
     });
     builder.addCase(updateCount.fulfilled, (state, action) => {
       return {
@@ -519,28 +634,28 @@ export const counterSlice = createSlice({
       };
     });
     builder.addCase(updateCount.rejected, (state, action) => {
-      return {...state};
+      return { ...state };
     });
     builder.addCase(getAllLike.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(getAllLike.fulfilled, (state, action) => {
-      return {...state, hideProgressBar: false, likeList: action?.payload};
+      return { ...state, hideProgressBar: false, likeList: action?.payload };
     });
     builder.addCase(getAllLike.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(getAllChatList.pending, (state, action) => {
-      return {...state, hideProgressBar: true};
+      return { ...state, hideProgressBar: true };
     });
     builder.addCase(getAllChatList.fulfilled, (state, action) => {
-      return {...state, hideProgressBar: false, chatList: action?.payload};
+      return { ...state, hideProgressBar: false, chatList: action?.payload };
     });
     builder.addCase(getAllChatList.rejected, (state, action) => {
-      return {...state, hideProgressBar: false};
+      return { ...state, hideProgressBar: false };
     });
     builder.addCase(checkPerfectMatch.pending, (state, action) => {
-      return {...state};
+      return { ...state };
     });
     builder.addCase(checkPerfectMatch.fulfilled, (state, action) => {
       return {
@@ -550,19 +665,19 @@ export const counterSlice = createSlice({
       };
     });
     builder.addCase(checkPerfectMatch.rejected, (state, action) => {
-      return {...state};
+      return { ...state };
     });
     builder.addCase(unMatchSkip.pending, (state, action) => {
-      return {...state};
+      return { ...state };
     });
     builder.addCase(unMatchSkip.fulfilled, (state, action) => {
-      return {...state, showPerfectMatch: false};
+      return { ...state, showPerfectMatch: false };
     });
     builder.addCase(unMatchSkip.rejected, (state, action) => {
-      return {...state};
+      return { ...state };
     });
     builder.addCase(setUserSearchCriteria.pending, (state, action) => {
-      return {...state};
+      return { ...state };
     });
     builder.addCase(setUserSearchCriteria.fulfilled, (state, action) => {
       return {
@@ -573,7 +688,7 @@ export const counterSlice = createSlice({
       };
     });
     builder.addCase(setUserSearchCriteria.rejected, (state, action) => {
-      return {...state};
+      return { ...state };
     });
   },
 });

@@ -4,7 +4,7 @@ import {scale} from 'react-native-size-matters';
 import Color from '../../util/Color';
 
 interface Props {
-  title: string;
+  title: string | number;
   textStyle?: TextStyle;
   numberofLine?: number;
   showStar?: boolean;

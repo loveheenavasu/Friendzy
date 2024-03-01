@@ -8,7 +8,7 @@ import EmptyLayout from './EmptyLayout';
 import {HomeHeader, Label} from '@src/commonComponent';
 import SwiperLayout from './SwiperLayout';
 import {useDispatch, useSelector} from 'react-redux';
-import {getAllUser} from '@src/redux/LoginAction';
+import {getAllUser, likeCount} from '@src/redux/LoginAction';
 import {RootState} from '@src/store';
 import * as Storage from '@src/service';
 import loginUserHooks from '@src/hooks/loginUserHooks';
@@ -23,11 +23,22 @@ interface Props {
   name: string | undefined;
 }
 
+
+interface HeartLikeProps {
+  dob: { nanoseconds: number; seconds: number };
+  id: string;
+  location: string;
+  loginUserId: string;
+  name: string;
+  token: string;
+  uri: string;
+}
+
 var mTimeOut: any = null;
 
 const HomeThree: FC = () => {
   const dispatch = useDispatch<any>();
-  const {hideProgressBar, tradeList, showPerfectMatch} = useSelector(
+  const {hideProgressBar, tradeList, showPerfectMatch,likedCount} = useSelector(
     (state: RootState) => state.login_Reducer,
   );
   const [loginId] = loginUserHooks();
@@ -35,6 +46,7 @@ const HomeThree: FC = () => {
   const [swipedAllCards, setSwipedAllCards] = useState(false);
   const [cardIndex, setCardIndex] = useState(0);
   const [active, setActive] = useState<boolean>(false);
+  const [heartLiked,setHeartLiked] = useState<HeartLikeProps[]>([]);
 
   const mRoute = useRoute<RouteProp<routesProps, 'HomeThree'>>();
 
@@ -48,6 +60,7 @@ const HomeThree: FC = () => {
 
   const refreshList = () => {
     dispatch(getAllUser());
+    dispatch(likeCount())
   };
 
   useEffect(() => {
@@ -112,13 +125,17 @@ const HomeThree: FC = () => {
     }));
     mTimeOut = setTimeout(() => {
       setData(prevData => ({...prevData, showLike: false}));
-      swiperRef?.current?.swipeRight();
+      swiperRef?.current?.swipeRight(); // this is calling the swipeRight of Swiper
       clearTimeout(mTimeOut);
     }, 1200);
+  //  dispatch(likeCount())
   };
 
+
+
+
   const clickSupperLike = () => {
-    clearTimeout(mTimeOut);
+   clearTimeout(mTimeOut);
     setData(prevData => ({
       ...prevData,
       showLike: false,
@@ -148,7 +165,7 @@ const HomeThree: FC = () => {
   };
   return (
     <View style={styles.container}>
-      <HomeHeader />
+      <HomeHeader/>
       <Loader Visible={hideProgressBar} />
       {showPerfectMatch && (
         <MatchModal LoginUserId={loginId} LoginName={data?.name} />

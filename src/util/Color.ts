@@ -17,6 +17,9 @@ interface ColorType {
   Active_green: string;
   Green_Color : string;
   newColor:string;
+  male:string;
+  female:string;
+  violet:string;
 }
 
 const Color: ColorType = {
@@ -37,6 +40,9 @@ const Color: ColorType = {
   Active_green: '#0FE16D',
   Green_Color:"green",
   newColor:'#F8E8EE',
+  male:'#92C7CF',
+  female:'#E6A4B4',
+  violet:'#98ABEE',
 };
 
 export default Color;
