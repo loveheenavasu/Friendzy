@@ -79,6 +79,8 @@ const Profile: FC = () => {
         .onSnapshot((documentSnapshot: FirebaseFirestoreTypes.DocumentData) => {
           if (documentSnapshot?.data()) {
             let {NAME, PROFILE_PIC} = documentSnapshot.data();
+            // console.log(NAME, PROFILE_PIC);
+            
             setUserData(prevData => ({
               ...prevData,
               name: NAME,

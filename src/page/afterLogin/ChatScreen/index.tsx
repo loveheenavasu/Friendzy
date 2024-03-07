@@ -1,6 +1,6 @@
 import {View} from 'react-native';
 import React, {FC, useEffect, useState} from 'react';
-import {GiftedChat} from 'react-native-gifted-chat';
+import {Composer, GiftedChat} from 'react-native-gifted-chat';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import * as Storage from '@src/service';
 import firestore, {
@@ -126,7 +126,7 @@ const ChatScreen: FC = () => {
       .orderBy('createdAt', 'desc')
       .onSnapshot(querySnapshot => {
         const mTemp: any = [];
-        querySnapshot.forEach(doc => {
+        querySnapshot?.forEach(doc => {
           const {chatData} = doc.data();
           const transformedMessages = chatData.map(mlist => ({
             _id: mlist?._id,
@@ -219,7 +219,16 @@ const ChatScreen: FC = () => {
           _id: userData.loginUserId,
           name: userData.name,
         }}
+        renderAvatar={null}
         keyboardShouldPersistTaps="handled"
+        renderComposer={(props)=>{
+          return(
+            <Composer
+              {...props}
+              textInputStyle={CommonStyles.black_text}
+            />
+          )
+        }}
       />
     </View>
   );

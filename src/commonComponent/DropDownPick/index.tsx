@@ -25,6 +25,7 @@ const DropDownPick: FC<Props> = ({
   selectedValue,
   titleStyle,
 }) => {
+  
   const NameWithStar = () => {
     return (
       <Label
@@ -46,8 +47,8 @@ const DropDownPick: FC<Props> = ({
       itemTextStyle={{marginLeft: scale(10),color:Color?.Black_Color}}
       data={[
         {id: 0, value: 'Male'},
-        {id: 0, value: 'Female'},
-        {id: 0, value: 'Transgender'},
+        {id: 1, value: 'Female'},
+        {id: 2, value: 'Transgender'},
       ]}
       selectedText={selectedValue}
     />

@@ -7,6 +7,10 @@ export const store = configureStore({
     login_Reducer: LoginAction,
     chatAction: ChatAction,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

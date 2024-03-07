@@ -2,6 +2,25 @@ import {Color} from '@src/util';
 import {StyleSheet} from 'react-native';
 import {scale, verticalScale} from 'react-native-size-matters';
 
+export const dynamicStyles = (active: boolean) =>
+  StyleSheet.create({
+    txt_style: {
+      color: active ? Color?.Primary_Color : Color?.Grey_Color,
+      fontSize: active ? scale(14) : scale(13),
+      opacity: active ? 1 : 0.8,
+    },
+    roundView: {
+      borderRadius: scale(20),
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: scale(9),
+      paddingVertical: verticalScale(6),
+      marginHorizontal: scale(5),
+      marginVertical: verticalScale(3),
+      borderWidth: active ? scale(1) : scale(0.4),
+      borderColor: active ? Color?.Primary_Color : Color?.Grey_Color,
+    },
+  });
 const styles = StyleSheet.create({
   label_txt: {
     marginVertical: verticalScale(8),
@@ -91,6 +110,11 @@ const styles = StyleSheet.create({
     elevation: 2,
     backgroundColor: '#FFF',
     marginTop: scale(5),
+  },
+  itemWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
 });
 

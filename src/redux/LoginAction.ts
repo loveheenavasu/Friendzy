@@ -123,7 +123,7 @@ export const updateProfile = createAsyncThunk(
       .where('sendTo', '==', pars.USER_ID)
       .get()
       .then(doc => {
-        console.log('doc', doc.docs);
+        // console.log('doc', doc.docs);
         doc.docs.forEach(snapshot => {
           firestore()
             .collection('LastMessage')
@@ -239,52 +239,134 @@ export const deleteProfilePic = createAsyncThunk(
   },
 );
 
+interface ageVal {
+  minAge: number;
+  maxAge: number;
+}
+// export const getAllUser = createAsyncThunk('GET_ALL_USER', async pars => {
+//   try {
+//     let genderFilter:'Male'|'Female'|'Transgender'='Male';
+//     let ageFilter:ageVal={
+//       maxAge:80,
+//       minAge:1
+//     };
+//     let locationFilter:string='';
+//     let interestsFilter:[]=[];
+//     Storage.retrieveData('USER_ID').then(async id => {
+//       if (id) {
+//         const userRef = await firestore().collection('Users').doc(id).get();
+//         if (userRef.exists) {
+//           let userData = userRef.data();
+//           console.log('dfd',userData?.SEARCH_CRITERIA.selectedInterests);
+//           if (userData?.SEARCH_CRITERIA) {
+//             locationFilter = userData?.SEARCH_CRITERIA?.location;
+//             ageFilter = {
+//               maxAge: userData?.SEARCH_CRITERIA?.mAge.maxAge,
+//               minAge: userData?.SEARCH_CRITERIA?.mAge.minAge,
+//             } 
+//             interestsFilter = userData?.SEARCH_CRITERIA?.selectedInterests;
+//             genderFilter = userData?.SEARCH_CRITERIA?.mGender
+//           }
+//         }
+//       }
+//     }).catch(err=>{
+//       console.log(err);
+//     })
+//     console.log('locationFilter',locationFilter,interestsFilter);
+    
+//     const querySnapshot = await firestore().collection('Users').get();
+//     const mTemp = querySnapshot.docs.map(documentSnapshot =>
+//       documentSnapshot.data(),
+//     );
+//     if (ageFilter && genderFilter) {
+//       let ageFilterList = [];
+//       const { minAge, maxAge } = ageFilter;
+//       for (let index = 0; index < mTemp.length; index++) {
+//         let dateOfBirth = myAge(mTemp[index].DOB);
+//         if (dateOfBirth >= minAge && dateOfBirth <= maxAge) {
+//           ageFilterList.push(mTemp[index]);
+//         }
+//       }
+//       let filterList = ageFilterList.filter(
+//         (item, index) => item.SEX == genderFilter,
+//       );
+//       return JSON.parse(JSON.stringify(filterList));
+//     } else if (ageFilter) {
+//       let ageFilterList = [];
+//       const { minAge, maxAge } = ageFilter;
+//       for (let index = 0; index < mTemp.length; index++) {
+//         let dateOfBirth = myAge(mTemp[index].DOB);
+//         if (dateOfBirth >= minAge && dateOfBirth <= maxAge) {
+//           ageFilterList.push(mTemp[index]);
+//         }
+//       }
+//       return JSON.parse(JSON.stringify(ageFilterList));
+//     } else if (genderFilter) {
+//       let filterList = mTemp.filter((item, index) => item.SEX == genderFilter);
+//       return JSON.parse(JSON.stringify(filterList));
+//     } else {
+//       return JSON.parse(JSON.stringify(mTemp));
+//     }
+//   } catch (error) {
+//     console.log(error);
+    
+//     return [];
+//   }
+// });
+
 export const getAllUser = createAsyncThunk('GET_ALL_USER', async pars => {
   try {
-    const genderFilter = await Storage.retrieveData('GENDER');
-    const ageFilter = await Storage.retrieveData('AGE');
+    const userId = await Storage.retrieveData('USER_ID');
+    if (!userId) return [];
+
+    const userRef = await firestore().collection('Users').doc(userId).get();
+    if (!userRef.exists) return [];
+
+    const userData = userRef.data();
+    const { mLocation, mAge, selectedInterests, mGender } = userData?.SEARCH_CRITERIA || {};
+
     const querySnapshot = await firestore().collection('Users').get();
-    const mTemp = querySnapshot.docs.map(documentSnapshot =>
-      documentSnapshot.data(),
-    );
-    if (ageFilter && genderFilter) {
-      let ageFilterList = [];
-      const { minAge, maxAge } = JSON.parse(ageFilter);
-      for (let index = 0; index < mTemp.length; index++) {
-        let dateOfBirth = myAge(mTemp[index].DOB);
-        if (dateOfBirth >= minAge && dateOfBirth <= maxAge) {
-          ageFilterList.push(mTemp[index]);
-        }
-      }
-      let filterList = ageFilterList.filter(
-        (item, index) => item.SEX == genderFilter,
-      );
-      return JSON.parse(JSON.stringify(filterList));
-    } else if (ageFilter) {
-      let ageFilterList = [];
-      const { minAge, maxAge } = JSON.parse(ageFilter);
-      for (let index = 0; index < mTemp.length; index++) {
-        let dateOfBirth = myAge(mTemp[index].DOB);
-        if (dateOfBirth >= minAge && dateOfBirth <= maxAge) {
-          ageFilterList.push(mTemp[index]);
-        }
-      }
-      return JSON.parse(JSON.stringify(ageFilterList));
-    } else if (genderFilter) {
-      let filterList = mTemp.filter((item, index) => item.SEX == genderFilter);
-      return JSON.parse(JSON.stringify(filterList));
-    } else {
-      return JSON.parse(JSON.stringify(mTemp));
+    const mTemp = querySnapshot.docs.map(documentSnapshot => documentSnapshot.data());
+
+    let ageFilterList = mTemp.filter(item => {
+      const dateOfBirth = myAge(item.DOB);
+      const meetsAgeCriteria = (!mAge || (dateOfBirth >= mAge.minAge && dateOfBirth <= mAge.maxAge));
+      const meetsGenderCriteria = (!mGender || item.SEX === mGender);
+      return meetsAgeCriteria && meetsGenderCriteria;
+    });
+
+    if (mLocation) {
+      ageFilterList = ageFilterList.filter(item => item.SEARCH_CRITERIA.mLocation === mLocation);
     }
+    if (selectedInterests && selectedInterests.length > 0) {
+      ageFilterList = ageFilterList.filter(item => {
+        return selectedInterests.map((interest:number) => {
+          item.SEARCH_CRITERIA.selectedInterests.includes(interest)});
+      });
+    }
+    return JSON.parse(JSON.stringify(ageFilterList));
   } catch (error) {
+    console.log(error);
     return [];
   }
 });
 
+
+
 export const setUserSearchCriteria = createAsyncThunk(
   'SET_USER_SEARCH_CRITERIA',
-  async (pars: { gender: string; age: Object; location: string }) => {
-    return pars;
+  async (pars: { gender: string; age: Object; location: string, selectedInterests: Number[] }, { getState }) => {
+    const id = await Storage.retrieveData('USER_ID');
+    try {
+      const userRef = firestore().collection('Users').doc(id);
+      // Merge the new data with existing data
+      await userRef.set({ SEARCH_CRITERIA: pars }, { merge: true });
+
+      return pars;
+    } catch (error) {
+      console.error('Error updating user search criteria:', error);
+      throw error;
+    }
   },
 );
 
@@ -335,6 +417,7 @@ export const sendNotification = createAsyncThunk(
           photoId: pars?.userId,
           userId: pars.loginUserId,
           likeTime: firestore.Timestamp.fromDate(new Date()),
+          SUPERLIKE:pars.SUPERLIKE
         },
       ];
 
@@ -416,6 +499,8 @@ export const getAllChatList = createAsyncThunk(
       const mergedDocs = [...sendToSnapshot.docs, ...sendBySnapshot.docs];
       let mTemp: any = [];
       mergedDocs.forEach(documentSnapshot => {
+        console.log(documentSnapshot.data()?.chatData[0]);
+        
         let Actor = {
           sendBy: documentSnapshot.data()?.sendBy,
           msg: documentSnapshot.data()?.chatData[0]?.text,
@@ -459,19 +544,19 @@ export const likeCount = createAsyncThunk(
       // Delay for 2 seconds
       // await new Promise(resolve => setTimeout(resolve, 2000));
       const querySnapshot = await firestore().collection('Likes').get()
-      console.log('querySnapshot-->', querySnapshot);
+      // console.log('querySnapshot-->', querySnapshot);
       let count = 0;
       querySnapshot.docs.map((doc) => {
         if (doc.exists) {
           // Access the data of the document
           const data = doc.data();
-          console.log('Document Data:', data);
+          // console.log('Document Data:', data);
           const likeDataArray = data?.LIKE_DATA;
           // Use map to iterate over each like object in the LIKE_DATA array
           likeDataArray.map((likeData: any) => {
             const { userId } = likeData;
-            console.log('USER ID -->>>', userId);
-            console.log('loggedInUserId->>', loggedInUserId);
+            // console.log('USER ID -->>>', userId);
+            // console.log('loggedInUserId->>', loggedInUserId);
             if (userId === loggedInUserId) {
               count++;
             }
@@ -499,7 +584,7 @@ export const getLikedProfile = createAsyncThunk(
       const loggedInUserId = await Storage.retrieveData('USER_ID');
       let likedProfiles: any[] = [];
       
-      const likesSnapshot = await firestore().collection('Likes').get();
+      const likesSnapshot = await firestore().collection("Likes").get();
 
       for (const doc of likesSnapshot.docs) {
         const docID = doc.id;
@@ -507,6 +592,8 @@ export const getLikedProfile = createAsyncThunk(
         
         for (const item of LIKE_DATA) {
           if (item?.userId === loggedInUserId) {
+            console.log(item.SUPERLIKE);
+            
             console.log('YES We found it');
             const userDoc = await firestore().collection('Users').doc(docID).get();
             if (userDoc.exists) {
@@ -515,8 +602,12 @@ export const getLikedProfile = createAsyncThunk(
               if (userData?.DOB instanceof Date) {
                 userData.DOB = userData.DOB.toString();
               }
+              const finalUserData = {
+                ...userData,
+                SUPERLIKE:item?.SUPERLIKE?true:false
+              }
               // console.log('USERDATA-->>', userData);
-              likedProfiles.push(userData);
+              likedProfiles.push(finalUserData);
             }
           }
         }
@@ -552,7 +643,7 @@ export const counterSlice = createSlice({
       return { ...state, hideProgressBar: true };
     });
     builder.addCase(getLikedProfile.fulfilled, (state, action) => {
-      console.log('ARRAY -->',action?.payload);
+      // console.log('ARRAY -->',action?.payload);
       return { ...state, hideProgressBar: false, likedProfileArr: action?.payload };
     });
     builder.addCase(getLikedProfile.rejected, (state, action) => {

@@ -144,7 +144,7 @@ const HomeThree: FC = () => {
     }));
     mTimeOut = setTimeout(() => {
       setData(prevData => ({...prevData, showSupperLike: false}));
-      swiperRef?.current?.swipeRight();
+      swiperRef?.current?.swipeTop();
       clearTimeout(mTimeOut);
     }, 1200);
   };

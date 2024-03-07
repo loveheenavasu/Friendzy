@@ -48,6 +48,9 @@ const CommonStyles = StyleSheet.create({
     color: Color?.Red_Color,
     marginBottom: verticalScale(5),
   },
+  black_text:{
+    color:Color.Black_Color
+  }
 });
 
 export default CommonStyles;

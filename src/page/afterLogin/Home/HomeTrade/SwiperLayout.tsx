@@ -30,13 +30,14 @@ const SwiperLayout: FC<Props> = ({
 }) => {
   const dispatch = useDispatch<any>();
   const {} = useSelector((state: RootState) => state.login_Reducer);
-  const clickLike = (ITEM: any) => {
+  const clickLike = (ITEM: any,SUPERLIKE:boolean) => {
     let pars = {
       token: ITEM?.token,
       name: ITEM?.name,
       userId: ITEM?.id,
       userName: UserName,
       loginUserId: ITEM?.loginUserId,
+      SUPERLIKE:SUPERLIKE
     };
     dispatch(sendNotification(pars));
     dispatch(
@@ -60,11 +61,14 @@ const SwiperLayout: FC<Props> = ({
       </View>
     );
   };
+  
   return (
     <View style={styles.swiper_Main_Con}>
       <Swiper
         ref={Ref}
-        onSwipedRight={item => clickLike(Cards[item])}
+        onSwipedRight={item => clickLike(Cards[item],false)}
+        onSwipedTop={item => clickLike(Cards[item],true)}
+        onSwipedBottom={()=>console.log('left and down swipe pending')}
         cards={Cards}
         cardIndex={CardIndex}
         cardVerticalMargin={scale(10)}
@@ -73,7 +77,7 @@ const SwiperLayout: FC<Props> = ({
         onSwipedAll={OnSwipedAllCards}
         stackSize={3}
         stackSeparation={15}
-        verticalSwipe={false}
+        // verticalSwipe={false}
         overlayLabels={{
           left: {
             title: Strings.nope,
@@ -87,6 +91,22 @@ const SwiperLayout: FC<Props> = ({
             style: {
               label: styles.like_Label,
               wrapper: styles.like_Wrapper,
+            },
+          },
+          top: {
+            title: Strings.supperLike,
+            style: {
+              label: {
+                backgroundColor: 'black',
+                borderColor: 'black',
+                color: 'white',
+                borderWidth: 1,
+              },
+              wrapper: {
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
             },
           },
         }}

@@ -78,7 +78,8 @@ const english = {
   congratulations: 'Congratulations!',
   matchFound:"Match Found",
   skip:"SKIP",
-  likeClick:"Liked Profile"
+  likeClick:"Liked Profile",
+  CheckProfile:'Check Profile'
 };
 
 export default english;

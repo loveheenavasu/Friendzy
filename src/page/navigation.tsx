@@ -28,7 +28,8 @@ import Notification from './afterLogin/Notification';
 import notificationPermission from '@src/hooks/notificationPersmission';
 import ShowOtherProfile from './afterLogin/Notification/ShowOtherProfile';
 import ChangePassowrd from './afterLogin/Home/Profile/ChangePassword';
-import HeartLikeScreen from './beforeLogin/LikeScreen';
+import HeartLikeScreen from './afterLogin/LikeScreen';
+import CheckProfile from './afterLogin/CheckProfile';
 
 const LoginStack = createNativeStackNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -75,6 +76,7 @@ const AfterLoginStack = () => {
       <HomeStack.Screen name="ShowOtherProfile" component={ShowOtherProfile} />
       <HomeStack.Screen name="ChangePassword" component={ChangePassowrd} />
       <HomeStack.Screen name="HeartLikeScreen" component={HeartLikeScreen} />
+      <HomeStack.Screen name="CheckProfile" component={CheckProfile} />
 
       
     </HomeStack.Navigator>

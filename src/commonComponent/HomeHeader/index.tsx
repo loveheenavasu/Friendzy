@@ -1,26 +1,24 @@
-import React, { FC, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, {FC, useEffect} from 'react';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import { scale, verticalScale } from 'react-native-size-matters';
+import {scale, verticalScale} from 'react-native-size-matters';
 import Icon from '../../util/Icon';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import Label from '../Label';
-import { Color } from '@src/util';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@src/store';
+import {Color} from '@src/util';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from '@src/store';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-
 
 // interface propTypes {
 //   isHeart: boolean;
 // }
 
 const HomeHeader: FC = () => {
-
   // console.log("--HomeHeader---isHeart---->", isHeart);
 
   const navigation = useNavigation<any>();
-  const { notificationCount ,likedCount} = useSelector(
+  const {notificationCount, likedCount} = useSelector(
     (state: RootState) => state.login_Reducer,
   );
   return (
@@ -31,25 +29,21 @@ const HomeHeader: FC = () => {
         resizeMode="contain"
       />
 
-      {
-        likedCount ?
-          (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('HeartLikeScreen')}
-              style={styles.heartIcon}
-            >
-              <Label title={likedCount}
-                textStyle={styles.txtStyle}
-               />
-              <FontAwesome
-                name="heart"
-                color={Color.Primary_Color}
-                size={scale(20)}
-              />
-            </TouchableOpacity>
-          )
-          : null
-      }
+      {likedCount ? (
+        <TouchableOpacity
+          onPress={() => navigation.navigate('HeartLikeScreen')}
+          style={styles.heartIcon}>
+          <View style={styles.likeCountStyle}>
+            <Label title={likedCount} textStyle={styles.txtStyle} />
+          </View>
+
+          <FontAwesome
+            name="heart"
+            color={Color.Primary_Color}
+            size={scale(26)}
+          />
+        </TouchableOpacity>
+      ) : null}
       <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
         <FastImage
           style={styles.bell_Icon}
@@ -102,20 +96,27 @@ const styles = StyleSheet.create({
     fontSize: scale(10),
   },
   heartIcon: {
-    // backgroundColor:'red',
-    marginLeft: scale(120)
+    marginLeft: scale(120),
   },
-  txtStyle:
-  { 
-  color: 'black',
-  position:'absolute',
-  fontSize:scale(12),
-  top:-5,
-  zIndex:999,
-  right:-6
+  likeCountStyle: {
+    backgroundColor: '#FF6E4F',
+    borderRadius: scale(50),
+    height:scale(17),
+    width:scale(15),
+    position: 'absolute',
+    right: scale(-6),
+    top: scale(-5),
+    padding:scale(2),
+    zIndex: 999,
+    justifyContent:'center',
+    alignItems:'center'
 
 
-}
+  },
+  txtStyle: {
+    color: 'white',
+    fontSize: scale(12),
+  },
 });
 
 export default HomeHeader;

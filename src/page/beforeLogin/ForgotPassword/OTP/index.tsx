@@ -13,7 +13,7 @@ interface navigationProps {
   NewPass: undefined;
 }
 
-const HomeTwo = () => {
+const OTP = () => {
   const navigation = useNavigation<NavigationProp<navigationProps>>();
   const [otp, setOtp] = useState(
     Array.from({length: 4}, () => {
@@ -130,4 +130,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeTwo;
+export default OTP;

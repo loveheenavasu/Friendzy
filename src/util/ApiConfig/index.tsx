@@ -6,7 +6,9 @@ const firbaseInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
     Authorization:
-      'key=AAAAPTuXAZE:APA91bFWo2zMYQQXZalVQhLTWDohkyBQZGA2G0UCeiUFRwavUFEOyeJTeJFX9Zv6qxftg3MozATvWmvBNpn1QX1-1H3IEq-X_Q16lYFV2zuzrP9O2FNYfPbeahTsUScrr2_z7EPStbND',
+      'key=AAAAygspTng:APA91bEgzumnBREPRfk3zcdHWLd6TALKqJWlVdpFY8U9fQmdARhsO73bMs30aY2Xf5vwQalNPnrzr1BdGKITVGhA2LZvGT7TzWXqrFWpxSi2lTsCD8M31BE5Xeh3fE1djLMN72Pr5YGO',
+    // Authorization:
+    //   'key=AAAAPTuXAZE:APA91bFWo2zMYQQXZalVQhLTWDohkyBQZGA2G0UCeiUFRwavUFEOyeJTeJFX9Zv6qxftg3MozATvWmvBNpn1QX1-1H3IEq-X_Q16lYFV2zuzrP9O2FNYfPbeahTsUScrr2_z7EPStbND',
     // Authorization:
     //   'key=AAAAygspTng:APA91bEgzumnBREPRfk3zcdHWLd6TALKqJWlVdpFY8U9fQmdARhsO73bMs30aY2Xf5vwQalNPnrzr1BdGKITVGhA2LZvGT7TzWXqrFWpxSi2lTsCD8M31BE5Xeh3fE1djLMN72Pr5YGO',
   },
@@ -29,13 +31,15 @@ const postMethod = (pars: any): Promise<any> => {
       data: {
         to: pars?.token,
         data: {
-          body: `${pars.userName} like your photo`,
-          title: pars.name,
+          // body: `${pars.userName} like your photo`,
+          // title: pars.name,
+          title: `${pars.userName} like your profile`,
           type: 'Like',
         },
         notification: {
-          body: `${pars.userName}  like your photo`,
-          title: pars.name,
+          // body: `${pars.userName}  like your photo`,
+          // title: pars.name,
+          title: `${pars.userName} like your profile`,
           type: 'Like',
         },
       },

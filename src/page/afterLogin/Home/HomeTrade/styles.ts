@@ -13,7 +13,8 @@ const styles = StyleSheet.create({
     borderColor: '#E8E8E8',
     justifyContent: 'center',
     backgroundColor: 'white',
-    height: Platform.OS === 'ios' ? '60%' : '70%',
+    // height: Platform.OS === 'ios' ? '60%' : '70%',
+    height:'67%',
     width: '100%',
   },
   text: {

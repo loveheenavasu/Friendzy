@@ -30,6 +30,7 @@ type navigationProps = {
 
 const ChatList: FC = () => {
   const navigation = useNavigation<NavigationProp<navigationProps>>();
+
   const dispatch = useDispatch<any>();
   const {hideProgressBar, chatList} = useSelector(
     (state: RootState) => state.login_Reducer,
@@ -82,13 +83,14 @@ const ChatList: FC = () => {
 
   const _chatList = ({item}: any) => {
     const {name, msg, time, profilePic, count, userId} = item;
+    
     return (
       <TouchableOpacity
         style={styles.chat_mainview}
         onPress={() => clickNext(item)}>
         <View style={styles.img_box}>
           {/* <FastImage source={{uri: profilePic}} style={styles.profile_Con} /> */}
-          <CustomImage uri={{uri: profilePic}} styles={styles.profile_Con} />
+          <CustomImage uri={{ uri: profilePic }} styles={styles.profile_Con} resizeMode={'cover'} />
           {userList?.some(ITEM => ITEM?.userId == userId && ITEM.status) && (
             <ActiveDot dotStyle={styles.dot_Con} />
           )}

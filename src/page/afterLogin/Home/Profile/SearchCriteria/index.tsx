@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 import {scale} from 'react-native-size-matters';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import Slider from 'react-native-a11y-slider';
 import {useNavigation} from '@react-navigation/native';
-import {CommonStyles, Color, Strings, Loader} from '@src/util';
+import {CommonStyles, Color, Strings, Loader, InterestArray} from '@src/util';
 import {
   HeaderGoToBack,
   Label,
@@ -12,12 +12,13 @@ import {
   CustomButton,
   DropDownPick,
 } from '@src/commonComponent';
-import styles from './styles';
+import styles, {dynamicStyles} from './styles';
 import {useDispatch, useSelector} from 'react-redux';
 import {setUserSearchCriteria} from '@src/redux/LoginAction';
 import {RootState} from '@src/store';
 import * as Storage from '@src/service';
 import {Toast} from 'react-native-toast-message/lib/src/Toast';
+import firestore from '@react-native-firebase/firestore';
 
 interface ageVal {
   minAge: Number;
@@ -30,27 +31,38 @@ const SearchCriteria = () => {
   const {gender, age, location} = useSelector(
     (state: RootState) => state.login_Reducer,
   );
-  const [loc, setLoc] = useState<string>('');
-  const [mGender, setGender] = useState<string>('');
+  const [mlocation, setLoction] = useState<string>('');
+  const [mGender, setGender] = useState<string>('Male');
   const [showLoader, setShowLoader] = useState<boolean>(false);
   const [mAge, setAge] = useState<ageVal>({
     minAge: 0,
     maxAge: 79,
   });
+  const [selectedInterests, setSelectedInterests] = useState<Number[]>([]);
 
   useEffect(() => {
     setShowLoader(true);
-    Storage.retrieveData('GENDER').then(res => {
-      setGender(res ?? '');
-      setShowLoader(false);
-    });
-
-    Storage.retrieveData('AGE').then(res => {
-      setShowLoader(false);
-      if (res) {
-        let age = JSON.parse(res);
-        setAge({minAge: age?.minAge, maxAge: age?.maxAge});
+    Storage.retrieveData('USER_ID').then(async id => {
+      if (id) {
+        const userRef = await firestore().collection('Users').doc(id).get();
+        if (userRef.exists) {
+          let userData = userRef.data();
+          // console.log(userData?.SEARCH_CRITERIA);
+          if (userData?.SEARCH_CRITERIA) {
+            setLoction(userData?.SEARCH_CRITERIA?.mLocation);
+            setAge({
+              maxAge: userData?.SEARCH_CRITERIA?.mAge.maxAge,
+              minAge: userData?.SEARCH_CRITERIA?.mAge.minAge,
+            });
+            setSelectedInterests(userData?.SEARCH_CRITERIA?.selectedInterests);
+            setGender(userData?.SEARCH_CRITERIA?.mGender);
+          }
+        }
       }
+    }).catch(err=>{
+      console.log(err);
+    }).finally(()=>{
+      setShowLoader(false);
     });
   }, []);
 
@@ -62,13 +74,15 @@ const SearchCriteria = () => {
   const clickApply = () => {
     setShowLoader(true);
     let pars = {
-      gender: mGender,
-      age: mAge,
-      location: loc,
+      mGender: mGender,
+      mAge: mAge,
+      mLocation: mlocation,
+      selectedInterests: selectedInterests,
     };
+    
     dispatch(setUserSearchCriteria(pars));
-    Storage.storeData('GENDER', mGender);
-    Storage.storeData('AGE', JSON.stringify(mAge));
+    // Storage.storeData('GENDER', mGender);
+    // Storage.storeData('AGE', JSON.stringify(mAge));
     setTimeout(() => {
       Toast.show({
         type: 'success',
@@ -84,12 +98,15 @@ const SearchCriteria = () => {
       gender: '',
       age: '',
       location: '',
+      setSelectedInterests: [],
     };
     setGender('');
-    dispatch(setUserSearchCriteria(pars));
-    Storage.storeData('GENDER', '');
-    Storage.storeData('AGE', '');
+    setSelectedInterests([]);
     setAge({minAge: 0, maxAge: 80});
+    setLoction('India');
+    dispatch(setUserSearchCriteria(pars));
+    // Storage.storeData('GENDER', '');
+    // Storage.storeData('AGE', '');
     setTimeout(() => {
       setShowLoader(false);
       Toast.show({
@@ -97,6 +114,16 @@ const SearchCriteria = () => {
         text1: 'All filter removed successfully',
       });
     }, 700);
+  };
+  const selectUnselect = (selectId: Number) => {
+    let itemIndex = selectedInterests.findIndex(itemId => itemId === selectId);
+    if (itemIndex < 0) {
+      setSelectedInterests([...selectedInterests, selectId]);
+    } else {
+      let copyArr = [...selectedInterests];
+      copyArr?.splice(itemIndex, 1);
+      setSelectedInterests(copyArr);
+    }
   };
   return (
     <View style={CommonStyles.main}>
@@ -109,9 +136,15 @@ const SearchCriteria = () => {
         <View>
           <Label textStyle={styles.label_txt} title={Strings.location} />
           <GooglePlacesAutocomplete
-            placeholder="Search"
+            // placeholder="Search"
+            placeholder="India"
             onPress={(data, details = null) => {
               console.log(data, details);
+            }}
+            textInputProps={{
+              // placeholderTextColor: Color.LIGHT_GREY,
+              placeholderTextColor: Color.Black_Color,
+              returnKeyType: 'search',
             }}
             query={{
               key: 'YOUR API KEY',
@@ -122,6 +155,9 @@ const SearchCriteria = () => {
               textInput: styles.google_Edit,
               predefinedPlacesDescription: {
                 color: '#1faadb',
+              },
+              description: {
+                color: '#000',
               },
             }}
           />
@@ -150,7 +186,30 @@ const SearchCriteria = () => {
                 backgroundColor: Color?.Black_Color,
                 height: scale(3),
               }}
+              labelTextStyle={{
+                color: Color.Black_Color,
+              }}
             />
+          </View>
+          <Label
+            textStyle={styles.age_Label}
+            title={Strings.selectYourInterest}
+          />
+          <View style={styles.itemWrap}>
+            {InterestArray?.map((item, index) => {
+              let active = selectedInterests?.includes(item?.id);
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={dynamicStyles(active).roundView}
+                  onPress={() => selectUnselect(item?.id)}>
+                  <Label
+                    title={item?.name}
+                    textStyle={dynamicStyles(active).txt_style}
+                  />
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </WrapComponent>
