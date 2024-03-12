@@ -176,6 +176,7 @@ const styles = StyleSheet.create({
   },
   countryTxt: {
     marginLeft: moderateScale(2),
+    color:Color.Black_Color
   },
   leftBox: {
     width: '30%',

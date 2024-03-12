@@ -7,6 +7,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    zIndex:999,
   },
   icon: {
     width: scale(50),

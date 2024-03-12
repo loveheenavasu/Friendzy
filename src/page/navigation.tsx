@@ -30,6 +30,7 @@ import ShowOtherProfile from './afterLogin/Notification/ShowOtherProfile';
 import ChangePassowrd from './afterLogin/Home/Profile/ChangePassword';
 import HeartLikeScreen from './afterLogin/LikeScreen';
 import CheckProfile from './afterLogin/CheckProfile';
+import StoryViewListScreen from './afterLogin/StoryViewList';
 
 const LoginStack = createNativeStackNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -77,6 +78,7 @@ const AfterLoginStack = () => {
       <HomeStack.Screen name="ChangePassword" component={ChangePassowrd} />
       <HomeStack.Screen name="HeartLikeScreen" component={HeartLikeScreen} />
       <HomeStack.Screen name="CheckProfile" component={CheckProfile} />
+      <HomeStack.Screen name="StoryViewList" component={StoryViewListScreen} />
 
       
     </HomeStack.Navigator>

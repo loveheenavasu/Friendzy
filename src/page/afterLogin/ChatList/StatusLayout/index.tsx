@@ -1,167 +1,259 @@
-import React, {FC, useEffect} from 'react';
-import {FlatList, StyleSheet, TouchableOpacity, View} from 'react-native';
-import {scale, verticalScale} from 'react-native-size-matters';
-import CustomImage from '../../../../commonComponent/CustomImage/Image';
-import Label from '../../../../commonComponent/Label';
-import Color from '../../../../util/Color';
-import Svg, {Circle, Path, Rect} from 'react-native-svg';
-
+import React, {FC, useEffect, useState} from 'react';
+import {
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
+import ImagePicker from '@src/commonComponent/ImagePicker';
+import {User} from '@src/util/types';
+import * as Storage from '@src/service';
+import {Label} from '@src/commonComponent';
+import {scale, verticalScale} from 'react-native-size-matters';
+import {Color, Loader} from '@src/util';
+import FastImage from 'react-native-fast-image';
+import Plus from 'react-native-vector-icons/AntDesign';
+import AddStatusModal from '@src/commonComponent/AddStatusModal';
+import {fetchOtherStories, fetchOwnStories} from '@src/redux/StoryAction';
+import Story from './Story';
+import {IUserStory, IUserStoryItem} from 'react-native-insta-story';
 
-interface Porps {
-  statusData: object[];
-}
+const StatusLayout: FC = () => {
+  const [userData, setUserData] = useState<User>();
+  const [selectedImage, setSelectedImage] = useState<string>('');
+  const [selectedImageType, setSelectedImageType] = useState<string>('');
+  const [isImagePickerVisible, setIsImagePickerVisible] =
+    useState<boolean>(false);
+  const [isAddStatusModalVisible, setIsAddStatusModalVisible] =
+    useState<boolean>(false);
+  const [stories, setStories] = useState<IUserStory[]>([]);
+  const [otherUserStories, setOtherUserStories] = useState<IUserStory[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loading2, setLoading2] = useState(false);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = await Storage.retrieveData('USER_ID');
 
-const StatusLayout: FC<Porps> = ({statusData}) => {
-  const numberOfDots = (2 * 3.14 * 48) / 2; //10 number of statues //48 is the radius of the circle
+        const userDoc = await firestore().collection('Users').doc(userId).get();
+        if (userDoc.exists) {
+          const user = userDoc.data() as User; // Cast to User interface
+          setUserData(user);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchUserData();
+  }, []);
 
-  // useEffect(() => {
-  //   const subScribe = firestore()
-  //     .collection('Chats')
-  //     .onSnapshot(documentSnapshot => {
-  //       console.log('User data: ', documentSnapshot.data());
-  //     });
-
-  //   return () => subScribe();
-  // }, []);
-
-  const _StatusList = ({item}: any) => {
-    const {id, img, name} = item;
-    return (
-      <TouchableOpacity style={styles.status_view}>
-        {/* <View
-          style={{
-            // width: scale(60),
-            // height: scale(60),
-            // borderRadius: scale(30),
-            // // borderStyle: 'dashed',
-            // // borderTopColor: 'red',
-            // // borderBottomColor:"blue",
-            // borderLeftColor: 'green',
-            // borderRightColor: 'blue',
-            // borderWidth: 20,
-            // justifyContent: 'center',
-            // alignItems: 'center',
-            // borderStyle:"solid"
-
-            borderWidth: 20,
-            borderTopColor: 'blue',
-            // borderRightColor: 'yellow',
-            // borderBottomColor: 'green',
-            borderLeftColor: 'blue',
-            borderColor:"red",
-            width: 60,
-            height: 60,
-            borderRadius:30,
-            justifyContent:"center",
-            alignItems:"center",
-            overflow: 'hidden',
-            borderStyle:"solid",
-            transform: [{ rotate: '-45deg' }],
-          }}>
-          <CustomImage
-            styles={{
-              width: scale(50),
-              height: scale(50),
-              borderRadius: scale(25),
-              transform: [{ rotate: '45deg' }],
-            }}
-            uri={img}
-          />
-        </View> */}
-
-        <View
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: 'red',
-            marginRight: -2,
-          }}
-        />
-        <View
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: 'grey',
-            position: 'absolute',
-            left: -2,
-            top: 0,
-          }}></View>
-        <CustomImage
-          styles={{
-            width: scale(50),
-            height: scale(50),
-            borderRadius: scale(25),
-            position: 'absolute',
-            top: 2,
-          }}
-          uri={img}
-        />
-        <Label title={name} textStyle={styles.name_txt} />
-      </TouchableOpacity>
-    );
+  const handleSelectMedia = (selectedImageUris: string) => {
+    setSelectedImage(selectedImageUris);
+    handleCloseImagePicker();
   };
 
+  const handleCloseImagePicker = () => {
+    setIsImagePickerVisible(false);
+    setTimeout(() => {
+      setIsAddStatusModalVisible(true);
+    }, 1000);
+  };
+
+  const handleSelectMediaType = (value: string) => {
+    setSelectedImageType(value);
+  };
+
+  const fetchLoggedUserStories = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchOwnStories();
+      if (response) {
+        const newStories = response.map(ele => ({
+          ...ele,
+          stories: ele.stories.map((stor: IUserStory) => ({
+            ...stor,
+            onPress: () => {},
+          })),
+        }));
+
+        setStories(newStories);
+      }
+      setTimeout(() => {
+        setLoading(false);
+      }, 200);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  const fetchOtherUserStories = async () => {
+    try {
+      setLoading2(true);
+      const response = await fetchOtherStories();
+      if (response) {
+        const newStories = response.map(ele => ({
+          ...ele,
+          stories: ele.stories.map((stor:IUserStoryItem) => ({...stor, onPress: () => null})),
+        }));
+        setOtherUserStories(newStories);
+      }
+      setTimeout(() => {
+        setLoading2(false);
+      }, 200);
+    } catch (error) {
+      console.log(error);
+      setLoading2(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLoggedUserStories();
+    fetchOtherUserStories();
+  }, []);
+
+  interface UserStatusProps {
+    item: User;
+    data: IUserStory[]; // Define the type of the data prop here
+  }
+  const UserStatus: FC<UserStatusProps> = ({item, data}) => {
+    const {
+      BIO,
+      COUNTRY,
+      DOB,
+      EMAIL,
+      FILE,
+      LIKE,
+      LOCATION,
+      NAME,
+      PASS,
+      PHONE,
+      PROFILE_PIC,
+      SEARCH_CRITERIA,
+      SEX,
+      SUPERLIKE,
+      TOKEN,
+      USER_ID,
+    } = item;
+    const userImage = PROFILE_PIC[0];
+    // console.log('data', data);
+
+    if (data.length > 0) {
+      return (
+        <View style={styles.extraMargin}>
+          <Story stories={stories} showViews={true} />
+          <View style={styles.plusViewWithData}>
+            <Plus
+              name="plus"
+              size={scale(16)}
+              color={Color.White_Color}
+              style={styles.plusIcon}
+              onPress={() => setIsImagePickerVisible(!isImagePickerVisible)}
+            />
+          </View>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.status_view}>
+        <Pressable
+          onPress={() => setIsImagePickerVisible(!isImagePickerVisible)}>
+          <FastImage style={styles.image} source={{uri: userImage}} />
+        </Pressable>
+        <Label title={NAME} textStyle={styles.name_txt} />
+        <View style={styles.plusView}>
+          <Plus
+            name="plus"
+            size={scale(16)}
+            color={Color.White_Color}
+            style={styles.plusIcon}
+            onPress={() => setIsImagePickerVisible(!isImagePickerVisible)}
+          />
+        </View>
+      </View>
+    );
+  };
+  const cancelImageUpload = () => {
+    setSelectedImage(''), setSelectedImageType('');
+    fetchLoggedUserStories();
+  };
+  if (loading || loading2) {
+    return <Loader Visible={loading2 || loading} />;
+  }
+
   return (
-    <FlatList
-      data={statusData}
-      renderItem={_StatusList}
-      horizontal
-      keyExtractor={(item, index) => index.toString()}
-      contentContainerStyle={{marginLeft: scale(5.2)}}
-    />
+    <>
+      {userData && stories && (
+        <View style={styles.flexRow}>
+          <UserStatus item={userData} data={stories} />
+          {otherUserStories && <Story showViews={false} stories={otherUserStories} />}
+        </View>
+      )}
+      <ImagePicker
+        visible={isImagePickerVisible}
+        onClose={handleCloseImagePicker}
+        onSelectMedia={handleSelectMedia}
+        selectedData={selectedImage}
+        selectOne
+        type={'photo'}
+        onSelectMediaType={handleSelectMediaType}
+      />
+      {selectedImage.length > 0 && (
+        <AddStatusModal
+          visible={isAddStatusModalVisible}
+          imageurl={selectedImage}
+          onClose={cancelImageUpload}
+        />
+      )}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   status_view: {
-    marginLeft: scale(4.5),
-    marginRight: scale(7),
+    // marginHorizontal: scale(10),
     alignItems: 'center',
+    // height: verticalScale(40),
     justifyContent: 'center',
+  },
+  image: {
+    height: scale(60),
+    width: scale(60),
+    backgroundColor: 'red',
+    borderRadius: scale(50),
+    borderColor: Color.Red_Color,
+    borderWidth: scale(1),
   },
   name_txt: {
-    color: Color?.Primary_Color,
+    color: Color?.Black_Color,
     fontWeight: '400',
-    fontSize: scale(11),
+    fontSize: scale(10),
     marginTop: verticalScale(3),
   },
-  outerCircle: {
-    position: 'absolute',
-    justifyContent: 'center',
+  flexRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    width: 42,
-    height: 42,
-    borderRadius: 21,
   },
-  innerCircle: {
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-  },
-  leftWrap: {
+  plusViewWithData: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 21,
-    height: 42,
+    bottom: scale(20),
+    right: scale(15),
+    backgroundColor: Color.Black_Color,
+    borderRadius: scale(10),
+    padding: scale(2),
   },
-  halfCircle: {
+  plusView: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    borderTopRightRadius: 0,
-    borderBottomRightRadius: 0,
-    width: 21,
-    height: 42,
-    borderRadius: 21,
+    bottom: scale(20),
+    right: scale(0),
+    backgroundColor: Color.Black_Color,
+    borderRadius: scale(10),
+    padding: scale(2),
   },
+  plusIcon: {
+    zIndex:100
+  },
+  extraMargin: {marginRight: scale(-20)},
 });
 
 export default StatusLayout;

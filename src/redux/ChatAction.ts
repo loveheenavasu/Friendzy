@@ -2,6 +2,8 @@ import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import firestore from '@react-native-firebase/firestore';
 import * as Storage from '@src/service';
 import {postMessageNotification} from '@src/util/ApiConfig';
+import storage from '@react-native-firebase/storage';
+import firebase from '@react-native-firebase/app';
 
 const initialState = {
   hideProgressBar: false,
@@ -103,6 +105,7 @@ export const setOnlineOfflineStatus = createAsyncThunk(
     }
   },
 );
+
 
 export const ChatAction = createSlice({
   name: 'counter',

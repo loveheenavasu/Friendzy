@@ -32,6 +32,7 @@ export interface User {
   TOKEN: string;
   USER_ID: string;
 }
+
 export type RootStackParamList = {
     Intro: undefined;
     Login: undefined;

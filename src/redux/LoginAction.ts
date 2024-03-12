@@ -243,76 +243,7 @@ interface ageVal {
   minAge: number;
   maxAge: number;
 }
-// export const getAllUser = createAsyncThunk('GET_ALL_USER', async pars => {
-//   try {
-//     let genderFilter:'Male'|'Female'|'Transgender'='Male';
-//     let ageFilter:ageVal={
-//       maxAge:80,
-//       minAge:1
-//     };
-//     let locationFilter:string='';
-//     let interestsFilter:[]=[];
-//     Storage.retrieveData('USER_ID').then(async id => {
-//       if (id) {
-//         const userRef = await firestore().collection('Users').doc(id).get();
-//         if (userRef.exists) {
-//           let userData = userRef.data();
-//           console.log('dfd',userData?.SEARCH_CRITERIA.selectedInterests);
-//           if (userData?.SEARCH_CRITERIA) {
-//             locationFilter = userData?.SEARCH_CRITERIA?.location;
-//             ageFilter = {
-//               maxAge: userData?.SEARCH_CRITERIA?.mAge.maxAge,
-//               minAge: userData?.SEARCH_CRITERIA?.mAge.minAge,
-//             } 
-//             interestsFilter = userData?.SEARCH_CRITERIA?.selectedInterests;
-//             genderFilter = userData?.SEARCH_CRITERIA?.mGender
-//           }
-//         }
-//       }
-//     }).catch(err=>{
-//       console.log(err);
-//     })
-//     console.log('locationFilter',locationFilter,interestsFilter);
-    
-//     const querySnapshot = await firestore().collection('Users').get();
-//     const mTemp = querySnapshot.docs.map(documentSnapshot =>
-//       documentSnapshot.data(),
-//     );
-//     if (ageFilter && genderFilter) {
-//       let ageFilterList = [];
-//       const { minAge, maxAge } = ageFilter;
-//       for (let index = 0; index < mTemp.length; index++) {
-//         let dateOfBirth = myAge(mTemp[index].DOB);
-//         if (dateOfBirth >= minAge && dateOfBirth <= maxAge) {
-//           ageFilterList.push(mTemp[index]);
-//         }
-//       }
-//       let filterList = ageFilterList.filter(
-//         (item, index) => item.SEX == genderFilter,
-//       );
-//       return JSON.parse(JSON.stringify(filterList));
-//     } else if (ageFilter) {
-//       let ageFilterList = [];
-//       const { minAge, maxAge } = ageFilter;
-//       for (let index = 0; index < mTemp.length; index++) {
-//         let dateOfBirth = myAge(mTemp[index].DOB);
-//         if (dateOfBirth >= minAge && dateOfBirth <= maxAge) {
-//           ageFilterList.push(mTemp[index]);
-//         }
-//       }
-//       return JSON.parse(JSON.stringify(ageFilterList));
-//     } else if (genderFilter) {
-//       let filterList = mTemp.filter((item, index) => item.SEX == genderFilter);
-//       return JSON.parse(JSON.stringify(filterList));
-//     } else {
-//       return JSON.parse(JSON.stringify(mTemp));
-//     }
-//   } catch (error) {
-//     console.log(error);
-    
-//     return [];
-//   }
-// });
+
 
 export const getAllUser = createAsyncThunk('GET_ALL_USER', async pars => {
   try {
@@ -403,6 +334,7 @@ export const unMatchSkip = createAsyncThunk('UNMATCH', async pars => {
 export const sendNotification = createAsyncThunk(
   'SEND_NOTIFICATION',
   async (pars: any, { dispatch }: { dispatch: Dispatch }) => {
+    console.log(pars);
     try {
       const res = await postMethod(pars);
       await firestore()
@@ -434,7 +366,9 @@ export const sendNotification = createAsyncThunk(
           dispatch(likeCount())
           console.log('---inside-like-->', 1);
         })
-        .catch(error => { });
+        .catch(error => { 
+          console.log(error);
+        });
     } catch (error) {
       console.log('----error--->', error);
     }
@@ -526,6 +460,8 @@ export const getAllChatList = createAsyncThunk(
         };
         mTemp.push(Actor);
       });
+      // console.log('mTemp',mTemp);
+      
       return mTemp;
     } catch (error) {
       throw error; // Rethrow the error to handle it in the calling function

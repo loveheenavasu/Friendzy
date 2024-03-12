@@ -1,12 +1,16 @@
 import {Label} from '@src/commonComponent';
-import {Color} from '@src/util';
-import React, {FC} from 'react';
+import {Color, Loader} from '@src/util';
+import React, {FC, useEffect, useState} from 'react';
 import {Modal, TouchableOpacity, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {scale} from 'react-native-size-matters';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Strings} from '@src/util';
 import styles from './styles';
+import firestore from '@react-native-firebase/firestore';
+import * as Storage from '@src/service';
+import {useDispatch} from 'react-redux';
+import {checkPerfectMatch, sendNotification} from '@src/redux/LoginAction';
 
 interface Props {
   Visible: boolean;
@@ -30,8 +34,88 @@ const PopUpModal: FC<Props> = ({
   let online = ActiveList?.some(
     ITEM => ITEM?.userId == SelectedProfile?.USER_ID && ITEM.status,
   );
+  const [sendMessage, setSendMessage] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isPerfectMatchLoader, setIsPerfectMatchLoader] = useState<boolean>(false)
+  
+  const isPerfectMatch = async () => {
+    try {
+      setIsPerfectMatchLoader(true)
+      const loginUserId = await Storage.retrieveData('USER_ID');
+      const loggedInUserData = await firestore()
+        .collection('Users')
+        .doc(loginUserId)
+        .get();
+      if (!loggedInUserData.exists) {
+        console.log('Logged-in user document not found');
+        return [];
+      }
+      const loggedInUser = loggedInUserData.data();
+      const perfectMatchUserIds = (loggedInUser && loggedInUser.LIKE) || [];
+      if (
+        SelectedProfile &&
+        perfectMatchUserIds.includes(SelectedProfile.USER_ID) &&
+        SelectedProfile.LIKE?.includes(loginUserId)
+      ) {
+        setSendMessage(true);
+        console.log(SelectedProfile.USER_ID);
+      } else {
+        setSendMessage(false);
+      }
+      setIsPerfectMatchLoader(false)
+
+    } catch (error) {
+      setIsPerfectMatchLoader(false)
+      console.error('Error fetching other user stories:', error);
+      return [];
+    }
+  };
+  useEffect(() => {
+    isPerfectMatch();
+  },[]);
+  
+  const dispatch = useDispatch<any>();
+  const likeBackUser = async () => {
+    try {
+      setLoading(true);
+      const userId = await Storage.retrieveData('USER_ID');
+      const userDoc = await firestore().collection('Users').doc(userId).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+
+        if (userData) {
+          let pars = {
+            token: SelectedProfile?.TOKEN,
+            name: SelectedProfile?.NAME,
+            userId: SelectedProfile?.USER_ID,
+            userName: userData.NAME,
+            loginUserId: userData?.USER_ID,
+            SUPERLIKE: false,
+          };
+          dispatch(sendNotification(pars));
+          dispatch(
+            checkPerfectMatch({
+              loginUserId: userData?.USER_ID,
+              userId: SelectedProfile?.USER_ID,
+            }),
+          );
+        }
+      }
+      setSendMessage(true)
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+    }
+  };
+  if(isPerfectMatchLoader){
+    return <Loader Visible={isPerfectMatchLoader} />
+    
+  }
+
   return (
     <Modal visible={Visible} animationType="slide" transparent={true}>
+      <Loader Visible={loading} />
       <View style={styles.main}>
         <View style={styles.inner_Main}>
           <View style={styles.inner_Child}>
@@ -40,12 +124,12 @@ const PopUpModal: FC<Props> = ({
               style={styles.profile_Pic}
               resizeMode="contain"
             />
-            <TouchableOpacity onPress={() => OnClickNext(SelectedProfile)}>
-              <Label
-                title={SelectedProfile?.NAME}
-                textStyle={styles.name_Label}
-              />
-            </TouchableOpacity>
+            {/* <TouchableOpacity onPress={() => OnClickNext(SelectedProfile)}> */}
+            <Label
+              title={SelectedProfile?.NAME}
+              textStyle={styles.name_Label}
+            />
+            {/* </TouchableOpacity> */}
 
             <View style={{flexDirection: 'row', marginVertical: scale(7)}}>
               <Ionicons
@@ -79,11 +163,25 @@ const PopUpModal: FC<Props> = ({
               <TouchableOpacity style={styles.back_B_Con} onPress={OnClickBack}>
                 <Label title={Strings.back} textStyle={styles.back_Label} />
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.send_B_Con}
-                onPress={OnClickMessage}>
-                <Label title={Strings.sendMesg} textStyle={styles.send_Label} />
-              </TouchableOpacity>
+              {sendMessage ? (
+                <TouchableOpacity
+                  style={styles.send_B_Con}
+                  onPress={OnClickMessage}>
+                  <Label
+                    title={Strings.sendMesg}
+                    textStyle={styles.send_Label}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.send_B_Con}
+                  onPress={likeBackUser}>
+                  <Label
+                    title={Strings.LikeBack}
+                    textStyle={styles.send_Label}
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>

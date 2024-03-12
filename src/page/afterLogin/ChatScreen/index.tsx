@@ -1,4 +1,4 @@
-import {View} from 'react-native';
+import {Pressable, View} from 'react-native';
 import React, {FC, useEffect, useState} from 'react';
 import {Composer, GiftedChat} from 'react-native-gifted-chat';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
@@ -128,7 +128,7 @@ const ChatScreen: FC = () => {
         const mTemp: any = [];
         querySnapshot?.forEach(doc => {
           const {chatData} = doc.data();
-          const transformedMessages = chatData.map(mlist => ({
+          const transformedMessages = chatData.map((mlist: any) => ({
             _id: mlist?._id,
             text: mlist?.text,
             createdAt: new firestore.Timestamp(
@@ -154,24 +154,38 @@ const ChatScreen: FC = () => {
   };
 
   useEffect(() => {
-    Storage.retrieveData('USER_ID').then(id => {
-      subscriber = firestore()
+    let unsubscribe: () => void;
+    Storage.retrieveData('USER_ID').then(async id => {
+      unsubscribe = firestore()
         .collection('Users')
         .doc(id)
-        .onSnapshot((documentSnapshot: FirebaseFirestoreTypes.DocumentData) => {
-          if(documentSnapshot?.data() >0)
-          {
-            let {NAME, PROFILE_PIC} = documentSnapshot.data();
-            setUserData(preData => ({
-              ...preData,
-              name: NAME,
-              profilePic: PROFILE_PIC[0],
-            }));
-          }
-        });
+        .onSnapshot(
+          (documentSnapshot: FirebaseFirestoreTypes.DocumentSnapshot) => {
+            if (documentSnapshot.exists) {
+              const userData = documentSnapshot.data();
+              if (userData) {
+                const {NAME, PROFILE_PIC} = userData;
+                setUserData(prevData => ({
+                  ...prevData,
+                  name: NAME,
+                  profilePic: PROFILE_PIC[0],
+                }));
+              }
+            } else {
+              console.log('User document does not exist');
+              // Handle case when document doesn't exist
+            }
+          },
+        );
     });
-    return () => subscriber;
-  }, []);
+
+    // Clean up the subscription when the component unmounts or the dependency changes
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []); // Dependency array ensures the effect runs when userData changes
 
   const onSend = (messages: any, ID: string) => {
     const {USER_ID, PROFILE_PIC} = mRoute?.params?.INFO;
@@ -199,14 +213,16 @@ const ChatScreen: FC = () => {
     dispatch(sendMessageNotification(actor));
     setCount(count + 1);
   };
-
+const [offModal, setOffModal] = useState(false)
   return (
-    <View style={CommonStyles.main}>
+    <Pressable onPress={()=> setOffModal(false)} style={CommonStyles.main}>
       <HeaderGoToBack
         chatOpen={mRoute?.params?.INFO}
         onPress={() => navigation.goBack()}
         title=""
         showActive={active}
+        offModal={offModal}
+        setOffModal={setOffModal}
         timeAgo={timeAgo?.toString()}
       />
       {/* <Loader Visible={hideProgressBar} /> */}
@@ -221,16 +237,13 @@ const ChatScreen: FC = () => {
         }}
         renderAvatar={null}
         keyboardShouldPersistTaps="handled"
-        renderComposer={(props)=>{
-          return(
-            <Composer
-              {...props}
-              textInputStyle={CommonStyles.black_text}
-            />
-          )
+        renderComposer={props => {
+          return (
+            <Composer {...props} textInputStyle={CommonStyles.black_text} />
+          );
         }}
       />
-    </View>
+    </Pressable>
   );
 };
 

@@ -13,14 +13,7 @@ import styles from './styles';
 import onlineOfflineHooks from '@src/hooks/onlineOfflineHooks';
 import loginUserHooks from '@src/hooks/loginUserHooks';
 import CustomImage from '@src/commonComponent/CustomImage/Image';
-
-const statusData = [
-  {id: 1, img: Icon?.dp1, name: 'My status'},
-  {id: 2, img: Icon?.dp2, name: 'Ricky'},
-  {id: 3, img: Icon?.dp3, name: 'Shinoy'},
-  {id: 4, img: Icon?.dp4, name: 'Mith'},
-  {id: 5, img: Icon?.dp5, name: 'Danish'},
-];
+import StatusLayout from './StatusLayout';
 
 type navigationProps = {
   ChatScreen: {
@@ -60,16 +53,6 @@ const ChatList: FC = () => {
       list[senderIndex].time = lastMessage?.chatData[0]?.createdAt;
     }
   }, [lastMessage]);
-
-  const _StatusList = ({item}: any) => {
-    const {img, name} = item;
-    return (
-      <TouchableOpacity style={styles.status_view}>
-        <Image source={img} />
-        <Label title={name} textStyle={styles.name_txt} />
-      </TouchableOpacity>
-    );
-  };
 
   const clickNext = (item: any) => {
     navigation.navigate('ChatScreen', {
@@ -120,12 +103,7 @@ const ChatList: FC = () => {
   return (
     <View style={CommonStyles?.main}>
       <Loader Visible={hideProgressBar} />
-      <FlatList
-        data={statusData}
-        renderItem={_StatusList}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      />
+      <StatusLayout />
       <FlatList
         data={list}
         renderItem={_chatList}

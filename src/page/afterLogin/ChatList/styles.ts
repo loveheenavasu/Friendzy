@@ -3,18 +3,6 @@ import {StyleSheet} from 'react-native';
 import {scale, verticalScale} from 'react-native-size-matters';
 
 const styles = StyleSheet.create({
-  status_view: {
-    marginHorizontal: scale(10),
-    alignItems: 'center',
-    height: verticalScale(92),
-  },
-
-  name_txt: {
-    color: Color?.Primary_Color,
-    fontWeight: '400',
-    fontSize: scale(14),
-    marginTop: verticalScale(3),
-  },
   chat_mainview: {
     flexDirection: 'row',
     alignItems: 'center',

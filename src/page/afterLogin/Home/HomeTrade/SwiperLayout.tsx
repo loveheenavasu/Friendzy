@@ -31,6 +31,7 @@ const SwiperLayout: FC<Props> = ({
   const dispatch = useDispatch<any>();
   const {} = useSelector((state: RootState) => state.login_Reducer);
   const clickLike = (ITEM: any,SUPERLIKE:boolean) => {
+    console.log(ITEM);
     let pars = {
       token: ITEM?.token,
       name: ITEM?.name,

@@ -99,6 +99,7 @@ const Notification: FC = () => {
         onPress={() => navigation?.goBack()}
       />
       <Loader Visible={hideProgressBar} />
+      {data?.showModal && 
       <PopUpModal
         Uri={data?.uri}
         Visible={data?.showModal}
@@ -114,6 +115,8 @@ const Notification: FC = () => {
         }}
         ActiveList={userList}
       />
+    }
+
       <FlatList
         data={list}
         keyExtractor={(item, index) => index.toString()}

@@ -21,6 +21,8 @@ interface Props {
   bgColor?: ViewStyle;
   showActive?: boolean;
   timeAgo?: string;
+  offModal?:boolean
+  setOffModal?:()=>void;
 }
 
 const data = [
@@ -35,9 +37,11 @@ const HeaderGoToBack: FC<Props> = ({
   bgColor,
   showActive,
   timeAgo,
+  offModal,
+  setOffModal
 }) => {
   const {NAME, PROFILE_PIC} = chatOpen || {};
-  const [isOpen, setOpen] = useState(false);
+  // const [isOpen, setOpen] = useState(false);
   const _GreyLine = () => {
     return <View style={styles.Gline}></View>;
   };
@@ -68,14 +72,18 @@ const HeaderGoToBack: FC<Props> = ({
           </View>
           <TouchableOpacity
             style={styles.dot_box}
-            onPress={() => setOpen(!isOpen)}>
+            onPress={() => {
+              // setOpen(!isOpen)
+              setOffModal(prev => !prev)
+            }
+            }>
             <FastImage
               source={Icon?.Dots}
               resizeMode="contain"
               style={styles.dots_icon}
             />
           </TouchableOpacity>
-          {isOpen && (
+          {offModal && (
             <View style={styles.report_block_box}>
               <FlatList
                 data={data}
