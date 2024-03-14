@@ -8,7 +8,7 @@ import {fetchStoryViewedUsers, handleStoryViewed} from '@src/redux/StoryAction';
 import Eye from 'react-native-vector-icons/AntDesign';
 import {User} from '@src/util/types';
 import StoryViewList from '@src/commonComponent/StoryViewList';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 interface StoryProps {
   stories: IUserStory[];
   showViews: boolean;
@@ -35,7 +35,7 @@ const Story: FC<StoryProps> = ({stories, showViews}) => {
   // const navigation = useNavigation()
   // const handleStoryViewedPressed = async (item: String[]) => {
   //   // setShowStoryViewModal(true);
-    
+
   //   try {
   //     const response = await fetchStoryViewedUsers(item);
   //     setViewedPersonList(response);
@@ -46,10 +46,10 @@ const Story: FC<StoryProps> = ({stories, showViews}) => {
   //   }
   // };
 
-  const handleClose = () =>{
-    setViewedPersonList([])
-    setShowStoryViewModal(false)
-  }
+  const handleClose = () => {
+    setViewedPersonList([]);
+    setShowStoryViewModal(false);
+  };
   return (
     <>
       <InstaStory
@@ -60,6 +60,13 @@ const Story: FC<StoryProps> = ({stories, showViews}) => {
         data={stories}
         onStorySeen={userStory => {
           handleStoryViewed(userStory);
+        }}
+        renderSwipeUpComponent={({item, onPress}) => {
+          return (
+            <View style={styles.captionView}>
+              <Label textStyle={styles.caption} title={item.swipeText || ''} />
+            </View>
+          );
         }}
         renderTextComponent={({item, profileName}) => {
           return (
@@ -90,18 +97,15 @@ const Story: FC<StoryProps> = ({stories, showViews}) => {
             </View>
           );
         }}
-        duration={5}
-      >
-
-      </InstaStory>
-      {showStoryViewModal && 
-      <StoryViewList
-        viewedUsers={viewedPersonList}
-        visible={showStoryViewModal}
-        onClose={handleClose}
-      />
-      }
-      </>
+        duration={5}/>
+      {showStoryViewModal && (
+        <StoryViewList
+          viewedUsers={viewedPersonList}
+          visible={showStoryViewModal}
+          onClose={handleClose}
+        />
+      )}
+    </>
   );
 };
 
@@ -130,5 +134,14 @@ const styles = StyleSheet.create({
     color: Color.White_Color,
     fontSize: scale(10),
     marginLeft: scale(10),
+  },
+  caption: {
+    color: Color.White_Color,
+    alignSelf: 'center',
+  },
+  captionView: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: scale(25),
   },
 });

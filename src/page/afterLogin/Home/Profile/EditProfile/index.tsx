@@ -38,6 +38,7 @@ import Toast from 'react-native-toast-message';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from '@src/store';
 import {updateProfile} from '@src/redux/LoginAction';
+import { isAtLeast18YearsOld } from '@src/util/Validator';
 
 interface ErrorState {
   isNameError: boolean;
@@ -52,7 +53,7 @@ interface ErrorState {
 interface userType {
   name: string;
   phone: string;
-  dob: Date | string;
+  dob: Date;
   email: string;
   loc: string;
   gender: string;
@@ -80,7 +81,7 @@ const EditProfile = () => {
   const [userData, setUserData] = useState<userType>({
     name: '',
     phone: '',
-    dob: '',
+    dob: new Date(),
     email: '',
     loc: '',
     gender: '',
@@ -177,6 +178,10 @@ const EditProfile = () => {
     } else if (!showDate) {
       setError({...isError, isDobError: true});
       setErrorMsg(Strings?.selectDob);
+    } else if (!email?.trim()) {
+    } else if (!isAtLeast18YearsOld(dob)) {
+      setError({...isError, isDobError: true});
+      setErrorMsg(Strings?.selectDobMin18);
     } else if (!email?.trim()) {
       setError({...isError, isEmailError: true});
       setErrorMsg(Strings?.enterEmail);
@@ -424,7 +429,7 @@ const EditProfile = () => {
           onPress={_Next}
         />
         <SelectDateTime
-          date={selectedDate}
+          date={userData.dob}
           open={showDateModal}
           onConfirm={date => selectDate(date)}
           onCancel={() => setShowDateModal(false)}

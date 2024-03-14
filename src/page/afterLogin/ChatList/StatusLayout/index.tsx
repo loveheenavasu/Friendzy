@@ -1,9 +1,5 @@
-import React, {FC, useEffect, useState} from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, {FC, useCallback, useEffect, useState} from 'react';
+import {Pressable, StyleSheet, View} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import ImagePicker from '@src/commonComponent/ImagePicker';
 import {User} from '@src/util/types';
@@ -17,6 +13,8 @@ import AddStatusModal from '@src/commonComponent/AddStatusModal';
 import {fetchOtherStories, fetchOwnStories} from '@src/redux/StoryAction';
 import Story from './Story';
 import {IUserStory, IUserStoryItem} from 'react-native-insta-story';
+import {useFocusEffect} from '@react-navigation/native';
+import {ShimmerPlaceholder} from '@src/commonComponent/ShimmerPlaceholder';
 
 const StatusLayout: FC = () => {
   const [userData, setUserData] = useState<User>();
@@ -94,7 +92,10 @@ const StatusLayout: FC = () => {
       if (response) {
         const newStories = response.map(ele => ({
           ...ele,
-          stories: ele.stories.map((stor:IUserStoryItem) => ({...stor, onPress: () => null})),
+          stories: ele.stories.map((stor: IUserStoryItem) => ({
+            ...stor,
+            onPress: () => null,
+          })),
         }));
         setOtherUserStories(newStories);
       }
@@ -107,10 +108,17 @@ const StatusLayout: FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchLoggedUserStories();
-    fetchOtherUserStories();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchLoggedUserStories();
+      fetchOtherUserStories();
+      return () => {};
+    }, []),
+  );
+  // useEffect(()=>{
+  //   fetchLoggedUserStories();
+  //     fetchOtherUserStories();
+  // },[])
 
   interface UserStatusProps {
     item: User;
@@ -177,8 +185,30 @@ const StatusLayout: FC = () => {
     setSelectedImage(''), setSelectedImageType('');
     fetchLoggedUserStories();
   };
+  const StoryPlaceholder = () => {
+    const placeholderArray = Array.from({length: 10}); // Adjust the number of placeholders as needed
+
+    return (
+      <>
+        <View
+          style={styles.story}>
+          {placeholderArray.map((_, index) => (
+            <View key={index}>
+              <ShimmerPlaceholder
+                style={styles.circle}
+              />
+              <ShimmerPlaceholder
+                style={styles.circletext}
+              />
+            </View>
+          ))}
+        </View>
+      </>
+    );
+  };
   if (loading || loading2) {
-    return <Loader Visible={loading2 || loading} />;
+    // return <Loader Visible={loading2 || loading} />;
+    return StoryPlaceholder();
   }
 
   return (
@@ -186,7 +216,9 @@ const StatusLayout: FC = () => {
       {userData && stories && (
         <View style={styles.flexRow}>
           <UserStatus item={userData} data={stories} />
-          {otherUserStories && <Story showViews={false} stories={otherUserStories} />}
+          {otherUserStories && (
+            <Story showViews={false} stories={otherUserStories} />
+          )}
         </View>
       )}
       <ImagePicker
@@ -210,6 +242,22 @@ const StatusLayout: FC = () => {
 };
 
 const styles = StyleSheet.create({
+  story:{
+    flexDirection: 'row',
+    gap: scale(10),
+    marginLeft: scale(10),
+    justifyContent: 'space-between',
+  },
+  circle:{
+    height: scale(60),
+    width: scale(60),
+    borderRadius: scale(50)
+  },
+  circletext:{
+    width: scale(60),
+    borderRadius: scale(50),
+    marginTop:scale(3)
+  },
   status_view: {
     // marginHorizontal: scale(10),
     alignItems: 'center',
@@ -219,7 +267,6 @@ const styles = StyleSheet.create({
   image: {
     height: scale(60),
     width: scale(60),
-    backgroundColor: 'red',
     borderRadius: scale(50),
     borderColor: Color.Red_Color,
     borderWidth: scale(1),
@@ -251,7 +298,7 @@ const styles = StyleSheet.create({
     padding: scale(2),
   },
   plusIcon: {
-    zIndex:100
+    zIndex: 100,
   },
   extraMargin: {marginRight: scale(-20)},
 });

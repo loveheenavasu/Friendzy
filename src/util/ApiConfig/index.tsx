@@ -26,6 +26,7 @@ firbaseInstance.interceptors.request.use(
 
 const postMethod = (pars: any): Promise<any> => {
   return new Promise((resolve, reject) => {
+    
     firbaseInstance({
       method: 'POST',
       data: {
@@ -33,13 +34,13 @@ const postMethod = (pars: any): Promise<any> => {
         data: {
           // body: `${pars.userName} like your photo`,
           // title: pars.name,
-          title: `${pars.userName} like your profile`,
+          title: pars.likeBack?`You got a match with ${pars.userName}`:`${pars.userName} like your profile`,
           type: 'Like',
         },
         notification: {
           // body: `${pars.userName}  like your photo`,
           // title: pars.name,
-          title: `${pars.userName} like your profile`,
+          title: pars.likeBack?`You got a match with ${pars.userName}`:`${pars.userName} like your profile`,
           type: 'Like',
         },
       },
@@ -54,21 +55,21 @@ const postMethod = (pars: any): Promise<any> => {
 };
 
 export const postMessageNotification = (pars: any): Promise<any> => {
+  
   return new Promise((resolve, reject) => {
     firbaseInstance({
       method: 'POST',
       data: {
         to: pars?.token,
         data: {
-          title: `${pars?.msg?.senderName} send message`,
-          // body: pars?.msg?.senderName,
-          body:  pars?.msg,
+          title:`${pars?.msg?.senderName}`,
+          body:  pars.msg.chatData[0].text,
           imageUrl: '',
           type: 'CHAT',
         },
         notification: {
-          title: `${pars?.msg?.senderName}  send message`,
-          body: pars?.msg?.senderName,
+          title:`${pars?.msg?.senderName}`,
+          body:  pars.msg.chatData[0].text,
           imageUrl: '',
           type: 'CHAT',
         },

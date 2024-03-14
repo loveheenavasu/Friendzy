@@ -21,6 +21,7 @@ const english = {
   enterLocation: 'Please enter Location',
   enterBio: 'Please enter few lines about yourself',
   selectDob: 'Please select you DOB',
+  selectDobMin18: 'You Must be 18 years old,',
   rememberMe: 'Remember me',
   forgetPassword: 'Forget Password?',
   changePassword:'Change Password',

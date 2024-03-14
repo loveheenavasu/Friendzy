@@ -10,7 +10,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from '@src/store';
 import Feather from 'react-native-vector-icons/Feather';
 import {unMatchSkip} from '@src/redux/LoginAction';
-import {updateChatTable, updateLastMessage} from '@src/redux/ChatAction';
+import {sendMessageNotification, updateChatTable, updateLastMessage} from '@src/redux/ChatAction';
 
 interface Props {
   LoginUserId: string;
@@ -65,8 +65,8 @@ const MatchModal: FC<Props> = ({LoginUserId, LoginName}) => {
       });
   }, []);
 
-  const onClickSend = () => {
-    if (message?.trim()) {
+  const onClickSend = async () => {
+    if (message?.trim() && matchUserId) {
       const chatid =
         matchUserId > LoginUserId
           ? LoginUserId + '-' + matchUserId
@@ -92,13 +92,25 @@ const MatchModal: FC<Props> = ({LoginUserId, LoginName}) => {
       receiverName: userData?.receiverName,
       count: userData?.count + 1,
     };
+    let otherUserFcmToken;
+    await firestore()
+      .collection('Users')
+      .doc(matchUserId)
+      .get()
+      .then(snapData => {
+        otherUserFcmToken= snapData.data()?.TOKEN
+      });
     let actor = {
       msg: myMesg,
       loginId: LoginUserId,
       userId: matchUserId,
+      token: otherUserFcmToken,
+
     };
     dispatch(updateLastMessage(actor));
     dispatch(updateChatTable(actor));
+    dispatch(sendMessageNotification(actor));
+
     setData(PreData => ({...PreData, count: PreData.count + 1}));
   };
   return (

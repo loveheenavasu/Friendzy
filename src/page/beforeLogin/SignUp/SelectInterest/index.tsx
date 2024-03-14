@@ -191,7 +191,7 @@ const SelectInterest: FC = () => {
           <Label textStyle={styles.age_Label} title={Strings.age} />
           <View style={{width: '90%', marginHorizontal: '5%'}}>
             <Slider
-              min={1}
+              min={18}
               max={80}
               values={[mAge?.minAge, mAge?.maxAge]} // it takes array of min and max values
               onChange={(values: Number[]) => setAgeVal(values)}

@@ -38,9 +38,9 @@ const SwiperLayout: FC<Props> = ({
       userId: ITEM?.id,
       userName: UserName,
       loginUserId: ITEM?.loginUserId,
-      SUPERLIKE:SUPERLIKE
+      SUPERLIKE:SUPERLIKE,
     };
-    dispatch(sendNotification(pars));
+    dispatch(sendNotification({...pars,likeBack:false}));
     dispatch(
       checkPerfectMatch({loginUserId: ITEM?.loginUserId, userId: ITEM?.id}),
     );

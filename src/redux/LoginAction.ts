@@ -334,7 +334,7 @@ export const unMatchSkip = createAsyncThunk('UNMATCH', async pars => {
 export const sendNotification = createAsyncThunk(
   'SEND_NOTIFICATION',
   async (pars: any, { dispatch }: { dispatch: Dispatch }) => {
-    console.log(pars);
+    // console.log(pars);
     try {
       const res = await postMethod(pars);
       await firestore()

@@ -53,3 +53,11 @@ export const myAge = (dobObj: objType) => {
     return 1;
   }
 };
+
+export const isAtLeast18YearsOld = (dob: Date): boolean => {
+  const currentDate = new Date();
+  const eighteenYearsAgo = new Date(currentDate.getFullYear() - 18, currentDate.getMonth(), currentDate.getDate());
+  console.log(dob <= eighteenYearsAgo);
+  
+  return dob <= eighteenYearsAgo;
+};

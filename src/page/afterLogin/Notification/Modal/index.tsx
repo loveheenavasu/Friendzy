@@ -92,7 +92,7 @@ const PopUpModal: FC<Props> = ({
             loginUserId: userData?.USER_ID,
             SUPERLIKE: false,
           };
-          dispatch(sendNotification(pars));
+          dispatch(sendNotification({...pars,likeBack:true}));
           dispatch(
             checkPerfectMatch({
               loginUserId: userData?.USER_ID,

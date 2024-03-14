@@ -25,6 +25,7 @@ import {
   HeaderGoToBack,
 } from '@src/commonComponent';
 import styles from './styles';
+import { isAtLeast18YearsOld } from '@src/util/Validator';
 
 interface ErrorState {
   isNameError: boolean;
@@ -39,7 +40,7 @@ interface ErrorState {
 interface userType {
   name: string;
   phone: string;
-  dob: Date | string;
+  dob: Date;
   email: string;
   loc: string;
   gender: string;
@@ -50,7 +51,7 @@ interface navigationProps {
   AddPhotos: {
     NAME: string;
     PHONE: string;
-    DOB: Date | string;
+    DOB: Date;
     SEX: string;
     LOCATION: string;
     BIO: string | number;
@@ -74,7 +75,7 @@ const Profile = () => {
   const [userData, setUserData] = useState<userType>({
     name: '',
     phone: '',
-    dob: '',
+    dob: new Date(),
     email: '',
     loc: '',
     gender: '',
@@ -139,6 +140,8 @@ const Profile = () => {
 
   const _Next = () => {
     const {name, phone, email, gender, loc, bio, dob} = userData;
+    console.log(dob);
+    
     if (!name?.trim()) {
       setError({...isError, isNameError: true});
       setErrorMsg(Strings.enterName);
@@ -151,6 +154,9 @@ const Profile = () => {
     } else if (!show) {
       setError({...isError, isDobError: true});
       setErrorMsg(Strings?.selectDob);
+    } else if (!isAtLeast18YearsOld(dob)) {
+      setError({...isError, isDobError: true});
+      setErrorMsg(Strings?.selectDobMin18);
     } else if (!email?.trim()) {
       setError({...isError, isEmailError: true});
       setErrorMsg(Strings?.enterEmail);
