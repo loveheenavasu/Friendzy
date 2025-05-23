@@ -5,11 +5,11 @@ type dummyObject = {
   name: string;
 };
 const CountryList: dummyObject[] = [
-  // {
-  //   flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Afghanistan.svg/1920px-Flag_of_Afghanistan.svg.png',
-  //   id: 0,
-  //   name: 'Afghanistan',
-  // },
+  {
+    flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Afghanistan.svg/1920px-Flag_of_Afghanistan.svg.png',
+    id: 0,
+    name: 'Afghanistan',
+  },
   {
     flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Flag_of_Albania.svg/1920px-Flag_of_Albania.svg.png',
     id: 1,
